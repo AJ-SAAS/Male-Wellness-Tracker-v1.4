@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var authManager: AuthManager
     @StateObject private var testStore = TestStore()
-    @State private var isLoggedIn = UserDefaults.standard.string(forKey: "userEmail") != nil
-    @State private var showSignUp = false
+    @State private var showAuth = false
     @State private var showInput = false
 
     var body: some View {
         NavigationStack {
-            if isLoggedIn {
+            if authManager.isSignedIn {
                 VStack {
                     if testStore.tests.isEmpty {
                         Text("Start Tracking Wellness")
@@ -50,20 +50,19 @@ struct ContentView: View {
                 }
                 .navigationTitle("Wellness Dashboard")
                 .toolbar {
-                    ToolbarItem(placement: .primaryAction) {
+                    ToolbarItemGroup(placement: .primaryAction) {
                         Button("Add Test Results") {
                             showInput = true
                         }
                         .tint(.blue)
                         .accessibilityLabel("Add Test Results")
-                    }
-                    ToolbarItem(placement: .secondaryAction) {
-                        Button("Logout") {
-                            UserDefaults.standard.removeObject(forKey: "userEmail")
-                            isLoggedIn = false
-                            testStore.tests.removeAll()
+                        Button(action: {
+                            authManager.signOut()
+                        }) {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .foregroundColor(.red)
                         }
-                        .accessibilityLabel("Logout")
+                        .accessibilityLabel("Sign Out")
                     }
                 }
                 .sheet(isPresented: $showInput) {
@@ -85,17 +84,17 @@ struct ContentView: View {
                         .font(.subheadline)
                         .foregroundColor(.gray)
                         .padding(.horizontal)
-                    Button("Sign Up") {
-                        showSignUp = true
+                    Button("Get Started") {
+                        showAuth = true
                     }
                     .padding()
                     .buttonStyle(.borderedProminent)
                     .tint(.blue)
-                    .accessibilityLabel("Sign Up")
+                    .accessibilityLabel("Get Started")
                 }
                 .navigationTitle("Welcome")
-                .sheet(isPresented: $showSignUp) {
-                    SignUpView(isLoggedIn: $isLoggedIn)
+                .sheet(isPresented: $showAuth) {
+                    AuthView()
                 }
             }
         }
@@ -156,5 +155,7 @@ struct StatusBox: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .environmentObject(AuthManager())
+            .environmentObject(TestStore())
     }
 }
