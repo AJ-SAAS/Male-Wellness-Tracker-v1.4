@@ -202,6 +202,7 @@ struct TestInputView: View {
     
     private func submitTest() {
         var newTest = SpermTest(
+            id: nil, // Firestore generates ID
             appearance: appearance,
             liquefaction: liquefaction,
             consistency: consistency,
@@ -232,7 +233,11 @@ struct TestInputView: View {
             newTest.estimateDNAFragmentation()
         }
         
-        testStore.tests.append(newTest)
+        print("Submitting test: Appearance=\(newTest.appearance), SemenQuantity=\(newTest.semenQuantity), Date=\(newTest.date)")
+        print("TestStore instance: \(testStore)")
+        testStore.addTest(newTest)
+        print("Dismissed TestInputView")
+        dismiss()
     }
 }
 

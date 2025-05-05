@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9256CBA22DBFCDF000F83862 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 9256CBA12DBFCDF000F83862 /* FirebaseAuth */; };
+		9256CBA42DBFCDF000F83862 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9256CBA32DBFCDF000F83862 /* FirebaseCore */; };
+		9256CBAF2DC0EF4600F83862 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9256CBAE2DC0EF4600F83862 /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		92DA4FAE2DA7C0DC006F8542 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -33,7 +39,7 @@
 		92F1A2092DAE7A8F00CB2CD9 /* Exceptions for "Sperm Test Results App" folder in "Sperm Test Results App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				Resources/Info.plist,
 			);
 			target = 92DA4F9F2DA7C0D9006F8542 /* Sperm Test Results App */;
 		};
@@ -65,6 +71,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9256CBA42DBFCDF000F83862 /* FirebaseCore in Frameworks */,
+				9256CBA22DBFCDF000F83862 /* FirebaseAuth in Frameworks */,
+				9256CBAF2DC0EF4600F83862 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,12 +94,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9256CBAD2DC0EF4600F83862 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		92DA4F972DA7C0D9006F8542 = {
 			isa = PBXGroup;
 			children = (
 				92DA4FA22DA7C0D9006F8542 /* Sperm Test Results App */,
 				92DA4FB02DA7C0DC006F8542 /* Sperm Test Results AppTests */,
 				92DA4FBA2DA7C0DC006F8542 /* Sperm Test Results AppUITests */,
+				9256CBAD2DC0EF4600F83862 /* Frameworks */,
 				92DA4FA12DA7C0D9006F8542 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -125,6 +142,9 @@
 			);
 			name = "Sperm Test Results App";
 			packageProductDependencies = (
+				9256CBA12DBFCDF000F83862 /* FirebaseAuth */,
+				9256CBA32DBFCDF000F83862 /* FirebaseCore */,
+				9256CBAE2DC0EF4600F83862 /* FirebaseFirestore */,
 			);
 			productName = "Sperm Test Results App";
 			productReference = 92DA4FA02DA7C0D9006F8542 /* Sperm Test Results App.app */;
@@ -209,6 +229,7 @@
 			mainGroup = 92DA4F972DA7C0D9006F8542;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 92DA4FA12DA7C0D9006F8542 /* Products */;
@@ -579,6 +600,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.12.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9256CBA12DBFCDF000F83862 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		9256CBA32DBFCDF000F83862 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		9256CBAE2DC0EF4600F83862 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 92DA4F982DA7C0D9006F8542 /* Project object */;
 }

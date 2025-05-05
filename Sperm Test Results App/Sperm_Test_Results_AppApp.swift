@@ -1,6 +1,5 @@
 import SwiftUI
 import FirebaseCore
-import FirebaseAuth
 
 @main
 struct Sperm_Test_Results_AppApp: App {
@@ -12,7 +11,7 @@ struct Sperm_Test_Results_AppApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TabBarView()
                 .environmentObject(authManager)
         }
     }

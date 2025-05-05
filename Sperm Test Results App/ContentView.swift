@@ -10,6 +10,9 @@ struct ContentView: View {
         NavigationStack {
             if authManager.isSignedIn {
                 VStack {
+                    Text("Tests count: \(testStore.tests.count)")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                     if testStore.tests.isEmpty {
                         Text("Start Tracking Wellness")
                             .font(.title2)
@@ -32,23 +35,23 @@ struct ContentView: View {
                             List {
                                 ForEach(testStore.tests) { test in
                                     NavigationLink(destination: ResultsView(test: test)) {
-                                        Text("Metrics on \(test.date, format: .dateTime.day().month().year())")
+                                        Text("Fertility Log on \(test.date, format: .dateTime.day().month().year())")
                                     }
                                     .accessibilityLabel("View test from \(test.date, format: .dateTime.day().month().year())")
                                 }
                                 .onDelete { indices in
-                                    testStore.tests.remove(atOffsets: indices)
+                                    testStore.deleteTests(at: indices)
                                 }
                             }
                         }
                     }
-                    Text("Version 1.4")
+                    Text("Version 1.5")
                         .font(.caption)
                         .fontDesign(.rounded)
                         .foregroundColor(.gray)
                         .padding(.top)
                 }
-                .navigationTitle("Wellness Dashboard")
+                .navigationTitle("Dashboard")
                 .toolbar {
                     ToolbarItemGroup(placement: .primaryAction) {
                         Button("Add Test Results") {
@@ -67,6 +70,7 @@ struct ContentView: View {
                 }
                 .sheet(isPresented: $showInput) {
                     TestInputView()
+                        .environmentObject(testStore)
                 }
             } else {
                 VStack {
@@ -95,6 +99,7 @@ struct ContentView: View {
                 .navigationTitle("Welcome")
                 .sheet(isPresented: $showAuth) {
                     AuthView()
+                        .environmentObject(authManager)
                 }
             }
         }
@@ -128,30 +133,6 @@ struct DashboardSummary: View {
     }
 }
 
-struct StatusBox: View {
-    let title: String
-    let status: String
-
-    var body: some View {
-        VStack {
-            Text(title)
-                .font(.caption)
-                .fontDesign(.rounded)
-            Text(status)
-                .font(.subheadline)
-                .fontDesign(.rounded)
-                .foregroundColor(status == "Typical" || status == "Active" ? .green : .orange)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color.white)
-        .cornerRadius(8)
-        .shadow(radius: 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title) status: \(status)")
-    }
-}
-
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
@@ -159,3 +140,4 @@ struct ContentView_Previews: PreviewProvider {
             .environmentObject(TestStore())
     }
 }
+

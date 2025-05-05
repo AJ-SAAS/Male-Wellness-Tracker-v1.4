@@ -70,6 +70,7 @@ struct ResultsView: View {
 struct ResultsView_Previews: PreviewProvider {
     static var previews: some View {
         ResultsView(test: SpermTest(
+            id: nil,
             appearance: .normal,
             liquefaction: .normal,
             consistency: .medium,
