@@ -39,7 +39,7 @@
 		92F1A2092DAE7A8F00CB2CD9 /* Exceptions for "Sperm Test Results App" folder in "Sperm Test Results App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Resources/Info.plist,
+				Info.plist,
 			);
 			target = 92DA4F9F2DA7C0D9006F8542 /* Sperm Test Results App */;
 		};
