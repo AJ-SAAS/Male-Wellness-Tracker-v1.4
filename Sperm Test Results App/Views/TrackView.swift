@@ -238,7 +238,7 @@ struct OverallScoreCard: View {
         case 80...100:
             return "In the Fertile Zone"
         case 60..<80:
-            return "Needs Improvement"
+            return "Needs Boosting"
         default:
             return "Below Average"
         }
@@ -413,7 +413,7 @@ struct PastResultsView: View {
         
         let label: String
         switch average {
-        case 0..<50: label = "Poor"
+        case 0..<50: label = "Low"
         case 50..<70: label = "Fair"
         case 70..<85: label = "Good"
         case 85...100: label = "Excellent"
