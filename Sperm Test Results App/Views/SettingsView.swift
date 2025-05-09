@@ -22,17 +22,17 @@ struct SettingsView: View {
                 
                 // Support Section
                 Section(header: Text("Support")) {
-                    Link("Contact Support", destination: URL(string: "mailto:support@yourapp.com")!)
+                    Link("Contact Support", destination: URL(string: "mailto:fathrapp@gmail.com")!)
                         .accessibilityLabel("Contact Support via Email")
-                    Link("Visit Our Website", destination: URL(string: "https://www.yourapp.com")!)
+                    Link("Visit Our Website", destination: URL(string: "https://www.fathr.xyz")!)
                         .accessibilityLabel("Visit Website")
                 }
                 
                 // Legal Section
                 Section(header: Text("Legal")) {
-                    Link("Terms of Service", destination: URL(string: "https://www.yourapp.com/terms")!)
+                    Link("Terms of Use", destination: URL(string: "https://www.fathr.xyz/r/terms")!)
                         .accessibilityLabel("Terms of Service")
-                    Link("Privacy Policy", destination: URL(string: "https://www.yourapp.com/privacy")!)
+                    Link("Privacy Policy", destination: URL(string: "https://www.fathr.xyz/r/privacy")!)
                         .accessibilityLabel("Privacy Policy")
                 }
                 

@@ -10,6 +10,7 @@
 		9256CBA22DBFCDF000F83862 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 9256CBA12DBFCDF000F83862 /* FirebaseAuth */; };
 		9256CBA42DBFCDF000F83862 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9256CBA32DBFCDF000F83862 /* FirebaseCore */; };
 		9256CBAF2DC0EF4600F83862 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9256CBAE2DC0EF4600F83862 /* FirebaseFirestore */; };
+		92C980F42DCDF14F00D60852 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 92C980F32DCDF14F00D60852 /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92C980F42DCDF14F00D60852 /* RevenueCat in Frameworks */,
 				9256CBA42DBFCDF000F83862 /* FirebaseCore in Frameworks */,
 				9256CBA22DBFCDF000F83862 /* FirebaseAuth in Frameworks */,
 				9256CBAF2DC0EF4600F83862 /* FirebaseFirestore in Frameworks */,
@@ -145,6 +147,7 @@
 				9256CBA12DBFCDF000F83862 /* FirebaseAuth */,
 				9256CBA32DBFCDF000F83862 /* FirebaseCore */,
 				9256CBAE2DC0EF4600F83862 /* FirebaseFirestore */,
+				92C980F32DCDF14F00D60852 /* RevenueCat */,
 			);
 			productName = "Sperm Test Results App";
 			productReference = 92DA4FA02DA7C0D9006F8542 /* Sperm Test Results App.app */;
@@ -230,6 +233,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				92C980F22DCDF14F00D60852 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 92DA4FA12DA7C0D9006F8542 /* Products */;
@@ -610,6 +614,14 @@
 				minimumVersion = 11.12.0;
 			};
 		};
+		92C980F22DCDF14F00D60852 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.23.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -627,6 +639,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		92C980F32DCDF14F00D60852 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92C980F22DCDF14F00D60852 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
