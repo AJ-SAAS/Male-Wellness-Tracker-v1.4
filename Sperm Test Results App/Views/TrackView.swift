@@ -47,6 +47,12 @@ struct TrackView: View {
                             }
                         }
                     }
+                    
+                    Text("Visualizations are based on WHO 6th Edition standards for informational purposes only. Fathr is not a medical device. Consult a doctor for fertility concerns.")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.top)
                 }
                 .padding(.horizontal)
                 .padding(.top, 0)
@@ -174,8 +180,8 @@ struct TrackView: View {
     
     private func mapAnalysisStatusToScore(_ status: String) -> Int {
         switch status.lowercased() {
-        case "typical", "normal": return 80
-        case "atypical", "abnormal": return 40
+        case "typical": return 80
+        case "atypical": return 40
         default: return 50
         }
     }
@@ -236,11 +242,11 @@ struct OverallScoreCard: View {
     private func overallScoreReference(score: Int) -> String {
         switch score {
         case 80...100:
-            return "In the Fertile Zone"
+            return "Higher Range"
         case 60..<80:
-            return "Needs Boosting"
+            return "Moderate Range"
         default:
-            return "Below Average"
+            return "Lower Range"
         }
     }
     
@@ -348,11 +354,11 @@ struct CategoryRow: View {
     func scoreFeedback(score: Int) -> String {
         switch score {
         case 80...100:
-            return "Optimal"
+            return "Higher Range"
         case 60..<80:
-            return "Needs Boosting"
+            return "Moderate Range"
         default:
-            return "Low – Take Action"
+            return "Lower Range"
         }
     }
 }
@@ -394,6 +400,12 @@ struct PastResultsView: View {
                     .cornerRadius(15)
                     .shadow(color: .gray.opacity(0.1), radius: 5)
                 }
+                
+                Text("Fathr is not a medical device. Visualizations are for informational purposes only. Consult a doctor for fertility concerns.")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.top)
             }
             .padding()
         }
@@ -401,7 +413,7 @@ struct PastResultsView: View {
         .navigationTitle("Past Results")
     }
     
-    private func calculateOverallScore(test: SpermTest) -> (Int, String) {
+    private func calculateOverallScore(test: TestData) -> (Int, String) {
         let motilityScore = min(Int(test.totalMobility), 100)
         let concentrationScore = min(Int(test.spermConcentration / 100 * 100), 100)
         let morphologyScore = min(Int(test.morphologyRate), 100)
@@ -413,11 +425,11 @@ struct PastResultsView: View {
         
         let label: String
         switch average {
-        case 0..<50: label = "Low"
-        case 50..<70: label = "Fair"
-        case 70..<85: label = "Good"
-        case 85...100: label = "Excellent"
-        default: label = "Fair"
+        case 0..<50: label = "Lower Range"
+        case 50..<70: label = "Moderate Range"
+        case 70..<85: label = "Higher Range"
+        case 85...100: label = "Upper Range"
+        default: label = "Moderate Range"
         }
         
         return (average, label)
@@ -425,8 +437,8 @@ struct PastResultsView: View {
     
     private func mapAnalysisStatusToScore(_ status: String) -> Int {
         switch status.lowercased() {
-        case "typical", "normal": return 80
-        case "atypical", "abnormal": return 40
+        case "typical": return 80
+        case "atypical": return 40
         default: return 50
         }
     }
@@ -472,7 +484,7 @@ extension Color {
     }
 }
 
-extension SpermTest {
+extension TestData {
     var dateFormatted: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

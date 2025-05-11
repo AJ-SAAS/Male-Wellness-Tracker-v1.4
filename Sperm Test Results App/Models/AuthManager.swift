@@ -3,11 +3,18 @@ import SwiftUI
 
 class AuthManager: ObservableObject {
     @Published var isSignedIn = false
+    @Published var currentUserID: String? // Added property
     @Published var errorMessage: String?
     
     init() {
-        if Auth.auth().currentUser != nil {
+        if let user = Auth.auth().currentUser {
             isSignedIn = true
+            currentUserID = user.uid
+        }
+        // Listen for auth state changes
+        Auth.auth().addStateDidChangeListener { [weak self] _, user in
+            self?.isSignedIn = user != nil
+            self?.currentUserID = user?.uid
         }
     }
     
@@ -26,6 +33,7 @@ class AuthManager: ObservableObject {
                 return
             }
             self?.isSignedIn = true
+            self?.currentUserID = result?.user.uid
         }
     }
     
@@ -40,6 +48,7 @@ class AuthManager: ObservableObject {
                 return
             }
             self?.isSignedIn = true
+            self?.currentUserID = result?.user.uid
         }
     }
     
@@ -47,6 +56,7 @@ class AuthManager: ObservableObject {
         do {
             try Auth.auth().signOut()
             isSignedIn = false
+            currentUserID = nil
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -75,6 +85,7 @@ class AuthManager: ObservableObject {
                 return
             }
             self?.isSignedIn = false
+            self?.currentUserID = nil
             self?.errorMessage = "Account deleted"
         }
     }

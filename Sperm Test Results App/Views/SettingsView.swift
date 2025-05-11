@@ -1,12 +1,16 @@
 import SwiftUI
 import FirebaseAuth
+import RevenueCat
 
 struct SettingsView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var testStore: TestStore
+    @EnvironmentObject var purchaseModel: PurchaseModel
     @State private var showingDeleteAccountAlert = false
     @State private var showingLogoutAlert = false
-    
+    @State private var showingPaywall = false
+    @State private var isRestoring = false
+
     var body: some View {
         NavigationStack {
             List {
@@ -16,10 +20,20 @@ struct SettingsView: View {
                         Text("Email: \(user.email ?? "N/A")")
                             .accessibilityLabel("Email: \(user.email ?? "Not available")")
                     }
-                    NavigationLink("Manage Account", destination: ManageAccountView())
-                        .accessibilityLabel("Manage Account")
+                    NavigationLink("Manage Account") {
+                        ManageAccountView()
+                    }
+                    .accessibilityLabel("Manage Account")
                 }
-                
+
+                // Premium Section
+                Section(header: Text("Upgrade")) {
+                    Button("Go Premium 🚀") {
+                        showingPaywall = true
+                    }
+                    .accessibilityLabel("Go Premium")
+                }
+
                 // Support Section
                 Section(header: Text("Support")) {
                     Link("Contact Support", destination: URL(string: "mailto:fathrapp@gmail.com")!)
@@ -27,7 +41,7 @@ struct SettingsView: View {
                     Link("Visit Our Website", destination: URL(string: "https://www.fathr.xyz")!)
                         .accessibilityLabel("Visit Website")
                 }
-                
+
                 // Legal Section
                 Section(header: Text("Legal")) {
                     Link("Terms of Use", destination: URL(string: "https://www.fathr.xyz/r/terms")!)
@@ -35,18 +49,43 @@ struct SettingsView: View {
                     Link("Privacy Policy", destination: URL(string: "https://www.fathr.xyz/r/privacy")!)
                         .accessibilityLabel("Privacy Policy")
                 }
-                
-                // In-App Purchases (Placeholder)
-                if hasInAppPurchases {
-                    Section {
-                        Button("Restore Purchases") {
-                            // Add StoreKit restore purchases logic here
-                            print("Restoring purchases...")
+
+                // In-App Purchases Section
+                Section {
+                    Button(action: {
+                        isRestoring = true
+                        Task {
+                            await purchaseModel.restorePurchases()
+                            isRestoring = false
                         }
-                        .accessibilityLabel("Restore Purchases")
+                    }) {
+                        HStack {
+                            Text("Restore Purchases")
+                            if isRestoring {
+                                ProgressView()
+                            }
+                        }
+                    }
+                    .disabled(isRestoring)
+                    .accessibilityLabel("Restore Purchases")
+                    if let error = purchaseModel.errorMessage {
+                        Text("Error: \(error)")
+                            .foregroundColor(.red)
+                        Button("Retry Restore") {
+                            isRestoring = true
+                            Task {
+                                await purchaseModel.restorePurchases()
+                                isRestoring = false
+                            }
+                        }
+                        .accessibilityLabel("Retry Restore Purchases")
+                    }
+                    if purchaseModel.isSubscribed {
+                        Text("Premium Unlocked ✅")
+                            .foregroundColor(.green)
                     }
                 }
-                
+
                 // Account Actions
                 Section {
                     Button("Log Out") {
@@ -62,7 +101,7 @@ struct SettingsView: View {
                     } message: {
                         Text("Are you sure you want to log out?")
                     }
-                    
+
                     Button("Delete Account") {
                         showingDeleteAccountAlert = true
                     }
@@ -77,7 +116,7 @@ struct SettingsView: View {
                         Text("This will permanently delete your account and all associated data. Are you sure?")
                     }
                 }
-                
+
                 // App Info
                 Section {
                     Text("App Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.5")")
@@ -85,85 +124,28 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .sheet(isPresented: $showingPaywall) {
+                PurchaseView(isPresented: $showingPaywall, purchaseModel: purchaseModel)
+            }
+            .onAppear {
+                print("SettingsView: purchaseModel is \(purchaseModel)")
+                Task {
+                    await purchaseModel.fetchOfferings() // Fetch offerings on appear
+                }
+            }
         }
     }
-    
-    private var hasInAppPurchases: Bool {
-        // Change to true if you add in-app purchases
-        return false
-    }
-    
+
     private func deleteAccount() {
         guard let user = Auth.auth().currentUser else { return }
-        
-        // Delete Firestore data first
-        testStore.deleteAllTestsForUser(userId: user.uid) { success in
-            if success {
-                // Delete Firebase Authentication account
-                authManager.deleteAccount()
-            } else {
-                authManager.errorMessage = "Failed to delete user data"
-            }
-        }
-    }
-}
 
-struct ManageAccountView: View {
-    @EnvironmentObject var authManager: AuthManager
-    @State private var newEmail = ""
-    @State private var newPassword = ""
-    @State private var showingError = false
-    
-    var body: some View {
-        Form {
-            Section(header: Text("Update Email")) {
-                TextField("New Email", text: $newEmail)
-                    .autocapitalization(.none)
-                    .keyboardType(.emailAddress)
-                    .accessibilityLabel("New Email")
-                Button("Update Email") {
-                    if let user = Auth.auth().currentUser, !newEmail.isEmpty {
-                        user.updateEmail(to: newEmail) { error in
-                            if let error = error {
-                                authManager.errorMessage = error.localizedDescription
-                                showingError = true
-                            } else {
-                                authManager.errorMessage = "Email updated successfully"
-                            }
-                        }
-                    }
+        testStore.deleteAllTestsForUser(userId: user.uid) { success in
+            DispatchQueue.main.async {
+                if success {
+                    authManager.deleteAccount()
+                } else {
+                    authManager.errorMessage = "Failed to delete user data"
                 }
-                .accessibilityLabel("Update Email")
-            }
-            
-            Section(header: Text("Update Password")) {
-                SecureField("New Password", text: $newPassword)
-                    .accessibilityLabel("New Password")
-                Button("Update Password") {
-                    if let user = Auth.auth().currentUser, !newPassword.isEmpty {
-                        user.updatePassword(to: newPassword) { error in
-                            if let error = error {
-                                authManager.errorMessage = error.localizedDescription
-                                showingError = true
-                            } else {
-                                authManager.errorMessage = "Password updated successfully"
-                            }
-                        }
-                    }
-                }
-                .accessibilityLabel("Update Password")
-            }
-            
-            if let error = authManager.errorMessage {
-                Text(error)
-                    .foregroundColor(.red)
-                    .accessibilityLabel("Error: \(error)")
-            }
-        }
-        .navigationTitle("Manage Account")
-        .onChange(of: showingError) { _ in
-            if showingError {
-                authManager.errorMessage = nil
             }
         }
     }
@@ -174,5 +156,6 @@ struct SettingsView_Previews: PreviewProvider {
         SettingsView()
             .environmentObject(AuthManager())
             .environmentObject(TestStore())
+            .environmentObject(PurchaseModel())
     }
 }

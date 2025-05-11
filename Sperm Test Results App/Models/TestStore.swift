@@ -3,7 +3,7 @@ import FirebaseAuth
 import FirebaseFirestore
 
 class TestStore: ObservableObject {
-    @Published var tests: [SpermTest] = []
+    @Published var tests: [TestData] = []
     private let db = Firestore.firestore()
     private var listener: ListenerRegistration?
     private var authHandle: AuthStateDidChangeListenerHandle?
@@ -55,9 +55,9 @@ class TestStore: ObservableObject {
                     return
                 }
                 print("Found \(documents.count) tests for user: \(userId)")
-                let decodedTests = documents.compactMap { document -> SpermTest? in
+                let decodedTests = documents.compactMap { document -> TestData? in
                     do {
-                        let test = try document.data(as: SpermTest.self)
+                        let test = try document.data(as: TestData.self)
                         print("Loaded test with ID: \(test.id ?? "nil"), Date: \(test.date)")
                         return test
                     } catch {
@@ -70,7 +70,7 @@ class TestStore: ObservableObject {
             }
     }
 
-    func addTest(_ test: SpermTest) {
+    func addTest(_ test: TestData) {
         guard let userId = Auth.auth().currentUser?.uid else {
             print("No user ID, cannot add test")
             return

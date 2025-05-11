@@ -6,7 +6,7 @@ enum Liquefaction: String, Codable, CaseIterable { case normal, abnormal }
 enum Consistency: String, Codable, CaseIterable { case thin, medium, thick }
 enum Agglutination: String, Codable, CaseIterable { case mild, moderate, severe }
 
-struct SpermTest: Identifiable, Codable {
+struct TestData: Identifiable, Codable {
     @DocumentID var id: String?
     let appearance: Appearance
     let liquefaction: Liquefaction

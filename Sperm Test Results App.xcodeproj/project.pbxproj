@@ -10,6 +10,8 @@
 		9256CBA22DBFCDF000F83862 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 9256CBA12DBFCDF000F83862 /* FirebaseAuth */; };
 		9256CBA42DBFCDF000F83862 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9256CBA32DBFCDF000F83862 /* FirebaseCore */; };
 		9256CBAF2DC0EF4600F83862 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9256CBAE2DC0EF4600F83862 /* FirebaseFirestore */; };
+		928FC97A2DD0AE0000933651 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 928FC9792DD0AE0000933651 /* FirebaseAnalytics */; };
+		928FC97C2DD0AE0400933651 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 928FC97B2DD0AE0400933651 /* FirebaseCrashlytics */; };
 		92C980F42DCDF14F00D60852 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 92C980F32DCDF14F00D60852 /* RevenueCat */; };
 /* End PBXBuildFile section */
 
@@ -75,6 +77,8 @@
 				92C980F42DCDF14F00D60852 /* RevenueCat in Frameworks */,
 				9256CBA42DBFCDF000F83862 /* FirebaseCore in Frameworks */,
 				9256CBA22DBFCDF000F83862 /* FirebaseAuth in Frameworks */,
+				928FC97C2DD0AE0400933651 /* FirebaseCrashlytics in Frameworks */,
+				928FC97A2DD0AE0000933651 /* FirebaseAnalytics in Frameworks */,
 				9256CBAF2DC0EF4600F83862 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,6 +152,8 @@
 				9256CBA32DBFCDF000F83862 /* FirebaseCore */,
 				9256CBAE2DC0EF4600F83862 /* FirebaseFirestore */,
 				92C980F32DCDF14F00D60852 /* RevenueCat */,
+				928FC9792DD0AE0000933651 /* FirebaseAnalytics */,
+				928FC97B2DD0AE0400933651 /* FirebaseCrashlytics */,
 			);
 			productName = "Sperm Test Results App";
 			productReference = 92DA4FA02DA7C0D9006F8542 /* Sperm Test Results App.app */;
@@ -639,6 +645,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		928FC9792DD0AE0000933651 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		928FC97B2DD0AE0400933651 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9256CBA02DBFCDF000F83862 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 		92C980F32DCDF14F00D60852 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;

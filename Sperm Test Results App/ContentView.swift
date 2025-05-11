@@ -108,7 +108,7 @@ struct ContentView: View {
 }
 
 struct DashboardSummary: View {
-    let test: SpermTest
+    let test: TestData
 
     var body: some View {
         VStack {

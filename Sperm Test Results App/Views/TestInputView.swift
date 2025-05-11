@@ -62,6 +62,12 @@ struct TestInputView: View {
                                 }
                             }
                         }
+                        Section {
+                            Text("Fathr is not a medical device. Visualizations are for informational purposes only. Consult a doctor for fertility concerns.")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                        }
                     } else if currentPage == 2 {
                         // Page 2: Motility
                         Section(header: Text("Motility")) {
@@ -96,6 +102,12 @@ struct TestInputView: View {
                                 }
                             }
                         }
+                        Section {
+                            Text("Fathr is not a medical device. Visualizations are for informational purposes only. Consult a doctor for fertility concerns.")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                        }
                     } else if currentPage == 3 {
                         // Page 3: Concentration
                         Section(header: Text("Concentration")) {
@@ -129,6 +141,12 @@ struct TestInputView: View {
                                 Slider(value: $liveSpermatozoa, in: 0...100, step: 1)
                             }
                         }
+                        Section {
+                            Text("Fathr is not a medical device. Visualizations are for informational purposes only. Consult a doctor for fertility concerns.")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                        }
                     } else if currentPage == 4 {
                         // Page 4: Morphology
                         Section(header: Text("Morphology")) {
@@ -153,6 +171,12 @@ struct TestInputView: View {
                                 Slider(value: $tailDefect, in: 0...100, step: 1)
                             }
                             Toggle("Estimate DNA Fragmentation Risk", isOn: $estimateDNA)
+                        }
+                        Section {
+                            Text("Fathr is not a medical device. Visualizations are for informational purposes only. Consult a doctor for fertility concerns.")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
                         }
                     }
                 }
@@ -201,7 +225,7 @@ struct TestInputView: View {
     }
     
     private func submitTest() {
-        var newTest = SpermTest(
+        var newTest = TestData(
             id: nil, // Firestore generates ID
             appearance: appearance,
             liquefaction: liquefaction,
