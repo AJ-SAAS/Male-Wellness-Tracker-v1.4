@@ -35,26 +35,11 @@ struct DashboardView: View {
                             .fontDesign(.rounded)
                         
                         if let latest = testStore.tests.last {
-                            DashboardSummary(test: latest)
-                        }
-                        
-                        Button(action: {
-                            if purchaseModel.isSubscribed {
-                                print("Accessing premium analysis...")
-                            } else {
-                                showPurchaseSheet = true
-                            }
-                        }) {
-                            Text("View Advanced Analysis")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
+                            Text("Test on \(latest.date, format: .dateTime.day().month().year())")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                                 .padding()
-                                .background(purchaseModel.isSubscribed ? Color.blue : Color.gray)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
                         }
-                        .padding(.horizontal)
-                        .accessibilityLabel("View Advanced Analysis")
                         
                         List {
                             ForEach(testStore.tests) { test in
@@ -68,6 +53,7 @@ struct DashboardView: View {
                                 testStore.deleteTests(at: indices)
                             }
                         }
+                        .listStyle(.plain)
                     }
                 }
                 
@@ -104,11 +90,18 @@ struct DashboardView: View {
                 if !analyticsConsent {
                     Analytics.setAnalyticsCollectionEnabled(false)
                 }
+                UserDefaults.standard.set(true, forKey: "hasSeenConsentPrompt")
             }) {
                 AnalyticsConsentView()
+                    .presentationDetents([.medium])
             }
             .onAppear {
                 showConsentPrompt = !UserDefaults.standard.bool(forKey: "hasSeenConsentPrompt")
+                if analyticsConsent {
+                    Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+                        AnalyticsParameterScreenName: "Dashboard"
+                    ])
+                }
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ShowPaywall"))) { _ in
                 showPurchaseSheet = true

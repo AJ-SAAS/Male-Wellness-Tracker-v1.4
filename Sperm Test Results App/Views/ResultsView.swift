@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ResultsView: View {
     let test: TestData
-    @EnvironmentObject var purchaseModel: PurchaseModel // For subscription status
+    @EnvironmentObject var purchaseModel: PurchaseModel // Retained for potential future use
     
     var body: some View {
         ScrollView {
@@ -17,67 +17,279 @@ struct ResultsView: View {
                     .font(.caption)
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 16)
                 
-                // Analysis (Free Metrics)
-                StatusBox(title: "Appearance", status: test.appearance.rawValue.capitalized)
-                StatusBox(title: "Liquefaction", status: test.liquefaction.rawValue.capitalized)
-                StatusBox(title: "Consistency", status: test.consistency.rawValue.capitalized)
-                StatusBox(title: "Semen Quantity", status: String(format: "%.1f mL", test.semenQuantity))
-                StatusBox(title: "pH", status: String(format: "%.1f", test.pH))
-                
-                // Motility (Free Metrics)
-                StatusBox(title: "Total Mobility", status: String(format: "%.0f%%", test.totalMobility))
-                StatusBox(title: "Progressive Mobility", status: String(format: "%.0f%%", test.progressiveMobility))
-                StatusBox(title: "Non-Progressive Mobility", status: String(format: "%.0f%%", test.nonProgressiveMobility))
-                StatusBox(title: "Travel Speed", status: String(format: "%.2f mm/sec", test.travelSpeed))
-                StatusBox(title: "Mobility Index", status: String(format: "%.0f%%", test.mobilityIndex))
-                StatusBox(title: "Still", status: String(format: "%.0f%%", test.still))
-                StatusBox(title: "Agglutination", status: test.agglutination.rawValue.capitalized)
-                
-                // Concentration (Free Metrics)
-                StatusBox(title: "Sperm Concentration", status: String(format: "%.0f M/mL", test.spermConcentration))
-                StatusBox(title: "Total Spermatozoa", status: String(format: "%.0f M/mL", test.totalSpermatozoa))
-                StatusBox(title: "Functional Spermatozoa", status: String(format: "%.0f M/mL", test.functionalSpermatozoa))
-                StatusBox(title: "Round Cells", status: String(format: "%.1f M/mL", test.roundCells))
-                StatusBox(title: "Leukocytes", status: String(format: "%.1f M/mL", test.leukocytes))
-                StatusBox(title: "Live Spermatozoa", status: String(format: "%.0f%%", test.liveSpermatozoa))
-                
-                // Morphology (Premium Metrics)
-                if purchaseModel.isSubscribed {
-                    StatusBox(title: "Morphology Rate", status: String(format: "%.0f%%", test.morphologyRate))
-                    StatusBox(title: "Pathology", status: String(format: "%.0f%%", test.pathology))
-                    StatusBox(title: "Head Defect", status: String(format: "%.0f%%", test.headDefect))
-                    StatusBox(title: "Neck Defect", status: String(format: "%.0f%%", test.neckDefect))
-                    StatusBox(title: "Tail Defect", status: String(format: "%.0f%%", test.tailDefect))
-                } else {
-                    premiumLockedSection(title: "Morphology Analysis")
+                // Analysis Section
+                VStack(alignment: .leading, spacing: 4) { // Nested VStack to reduce gap
+                    Text("Analysis")
+                        .font(.title3)
+                        .fontDesign(.rounded)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 16)
+                        .accessibilityHeading(.h2)
+                    Text("Tests the physical properties of the semen sample.")
+                        .font(.subheadline) // Changed to .subheadline for larger font
+                        .fontDesign(.rounded)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 16)
+                        .accessibilityLabel("Analysis section: Tests the physical properties of the semen sample.")
                 }
+                StatusBox(
+                    title: "Appearance",
+                    status: test.appearance.rawValue.capitalized,
+                    description: "How the sample looks. Normal is clear or white, indicating healthy semen."
+                )
+                StatusBox(
+                    title: "Liquefaction",
+                    status: test.liquefaction.rawValue.capitalized,
+                    description: "How the sample changes from gel to liquid. Normal liquefaction aids sperm movement."
+                )
+                StatusBox(
+                    title: "Consistency",
+                    status: test.consistency.rawValue.capitalized,
+                    description: "How thick or thin the sample is. Medium consistency is typical for healthy semen."
+                )
+                ProgressStatusBox(
+                    title: "Semen Quantity",
+                    value: test.semenQuantity,
+                    maxValue: 10.0,
+                    unit: "mL",
+                    whoRange: 1.4...6.0,
+                    description: "The volume of the sample. WHO recommends 1.4–6.0 mL for adequate sperm delivery."
+                )
+                ProgressStatusBox(
+                    title: "pH",
+                    value: test.pH,
+                    maxValue: 14.0,
+                    unit: "",
+                    whoRange: 7.2...8.0,
+                    description: "The acidity or alkalinity of the sample. A pH of 7.2–8.0 supports sperm function."
+                )
                 
-                // DNA Fragmentation (Premium Metrics)
-                if purchaseModel.isSubscribed {
-                    if let dnaRisk = test.dnaFragmentationRisk, let category = test.dnaRiskCategory {
-                        StatusBox(title: "DNA Fragmentation Risk", status: "\(dnaRisk)% (\(category))")
-                        Text("Note: This is an estimate based on your inputs. Consult a doctor for accurate tests (e.g., SCD/TUNEL).")
-                            .font(.caption)
-                            .fontDesign(.rounded)
-                            .foregroundColor(.gray)
-                            .padding(.horizontal)
-                    }
-                } else {
-                    premiumLockedSection(title: "DNA Fragmentation Analysis")
+                // Motility Section
+                VStack(alignment: .leading, spacing: 4) { // Nested VStack
+                    Text("Motility")
+                        .font(.title3)
+                        .fontDesign(.rounded)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                        .accessibilityHeading(.h2)
+                    Text("Checks how well sperm move and swim.")
+                        .font(.subheadline) // Changed to .subheadline
+                        .fontDesign(.rounded)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 16)
+                        .accessibilityLabel("Motility section: Checks how well sperm move and swim.")
                 }
+                ProgressStatusBox(
+                    title: "Total Mobility",
+                    value: test.totalMobility,
+                    maxValue: 100.0,
+                    unit: "%",
+                    whoRange: 40.0...100.0,
+                    description: "How many sperm are moving. WHO recommends ≥40% for healthy fertility."
+                )
+                ProgressStatusBox(
+                    title: "Progressive Mobility",
+                    value: test.progressiveMobility,
+                    maxValue: 100.0,
+                    unit: "%",
+                    whoRange: 30.0...100.0,
+                    description: "How many sperm swim forward. WHO suggests ≥30% for effective fertilization."
+                )
+                ProgressStatusBox(
+                    title: "Non-Progressive Mobility",
+                    value: test.nonProgressiveMobility,
+                    maxValue: 100.0,
+                    unit: "%",
+                    description: "How many sperm move but don’t swim forward. Lower values are common."
+                )
+                ProgressStatusBox(
+                    title: "Travel Speed",
+                    value: test.travelSpeed,
+                    maxValue: 1.0,
+                    unit: "mm/sec",
+                    description: "How fast sperm move. Higher speeds suggest better motility."
+                )
+                ProgressStatusBox(
+                    title: "Mobility Index",
+                    value: test.mobilityIndex,
+                    maxValue: 100.0,
+                    unit: "%",
+                    description: "A measure of overall sperm movement quality. Higher values indicate better function."
+                )
+                ProgressStatusBox(
+                    title: "Still",
+                    value: test.still,
+                    maxValue: 100.0,
+                    unit: "%",
+                    description: "How many sperm are not moving. Lower values mean more active sperm."
+                )
+                StatusBox(
+                    title: "Agglutination",
+                    status: test.agglutination.rawValue.capitalized,
+                    description: "Whether sperm stick together. None or mild is normal, severe may affect fertility."
+                )
                 
-                // Overall (Free Metric)
-                StatusBox(title: "Overall Status", status: test.overallStatus)
-                
-                // Placeholder for Premium Graphs (Optional)
-                if purchaseModel.isSubscribed {
-                    Text("Graphs Coming Soon")
-                        .font(.headline)
-                        .padding(.top)
-                    // TODO: Add SwiftUI Charts for motility, concentration, etc.
+                // Concentration Section
+                VStack(alignment: .leading, spacing: 4) { // Nested VStack
+                    Text("Concentration")
+                        .font(.title3)
+                        .fontDesign(.rounded)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                        .accessibilityHeading(.h2)
+                    Text("Measures the number of sperm in the sample.")
+                        .font(.subheadline) // Changed to .subheadline
+                        .fontDesign(.rounded)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 16)
+                        .accessibilityLabel("Concentration section: Measures the number of sperm in the sample.")
                 }
+                ProgressStatusBox(
+                    title: "Sperm Concentration",
+                    value: test.spermConcentration,
+                    maxValue: 100.0,
+                    unit: "M/mL",
+                    whoRange: 16.0...100.0,
+                    description: "How many sperm per milliliter. WHO recommends ≥16 M/mL for fertility."
+                )
+                ProgressStatusBox(
+                    title: "Total Spermatozoa",
+                    value: test.totalSpermatozoa,
+                    maxValue: 200.0,
+                    unit: "M/mL",
+                    whoRange: 39.0...200.0,
+                    description: "Total sperm in the sample. WHO suggests ≥39 M/mL for conception."
+                )
+                ProgressStatusBox(
+                    title: "Functional Spermatozoa",
+                    value: test.functionalSpermatozoa,
+                    maxValue: 100.0,
+                    unit: "M/mL",
+                    description: "Sperm capable of fertilization. Higher counts improve fertility chances."
+                )
+                ProgressStatusBox(
+                    title: "Round Cells",
+                    value: test.roundCells,
+                    maxValue: 10.0,
+                    unit: "M/mL",
+                    whoRange: 0.0...1.0,
+                    description: "Non-sperm cells in the sample. WHO recommends <1 M/mL to avoid inflammation."
+                )
+                ProgressStatusBox(
+                    title: "Leukocytes",
+                    value: test.leukocytes,
+                    maxValue: 5.0,
+                    unit: "M/mL",
+                    whoRange: 0.0...1.0,
+                    description: "White blood cells in the sample. WHO suggests <1 M/mL to rule out infection."
+                )
+                ProgressStatusBox(
+                    title: "Live Spermatozoa",
+                    value: test.liveSpermatozoa,
+                    maxValue: 100.0,
+                    unit: "%",
+                    whoRange: 50.0...100.0,
+                    description: "How many sperm are alive. ≥50% is typical for healthy semen."
+                )
+                
+                // Morphology Section
+                VStack(alignment: .leading, spacing: 4) { // Nested VStack
+                    Text("Morphology")
+                        .font(.title3)
+                        .fontDesign(.rounded)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                        .accessibilityHeading(.h2)
+                    Text("Examines the shape and structure of sperm.")
+                        .font(.subheadline) // Changed to .subheadline
+                        .fontDesign(.rounded)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 16)
+                        .accessibilityLabel("Morphology section: Examines the shape and structure of sperm.")
+                }
+                ProgressStatusBox(
+                    title: "Morphology Rate",
+                    value: test.morphologyRate,
+                    maxValue: 100.0,
+                    unit: "%",
+                    whoRange: 4.0...100.0,
+                    description: "How many sperm have normal shape. WHO recommends ≥4% for fertility."
+                )
+                ProgressStatusBox(
+                    title: "Pathology",
+                    value: test.pathology,
+                    maxValue: 100.0,
+                    unit: "%",
+                    description: "How many sperm have abnormal shapes. Lower percentages indicate healthier semen."
+                )
+                ProgressStatusBox(
+                    title: "Head Defect",
+                    value: test.headDefect,
+                    maxValue: 100.0,
+                    unit: "%",
+                    description: "Sperm with head abnormalities. Fewer defects suggest better fertility."
+                )
+                ProgressStatusBox(
+                    title: "Neck Defect",
+                    value: test.neckDefect,
+                    maxValue: 100.0,
+                    unit: "%",
+                    description: "Sperm with neck or midpiece issues. Lower values are better for sperm function."
+                )
+                ProgressStatusBox(
+                    title: "Tail Defect",
+                    value: test.tailDefect,
+                    maxValue: 100.0,
+                    unit: "%",
+                    description: "Sperm with tail abnormalities. Fewer defects improve sperm movement."
+                )
+                
+                // DNA Fragmentation Section
+                VStack(alignment: .leading, spacing: 4) { // Nested VStack
+                    Text("DNA Fragmentation")
+                        .font(.title3)
+                        .fontDesign(.rounded)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                        .accessibilityHeading(.h2)
+                    Text("Assesses damage to sperm DNA.")
+                        .font(.subheadline) // Changed to .subheadline
+                        .fontDesign(.rounded)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 16)
+                        .accessibilityLabel("DNA Fragmentation section: Assesses damage to sperm DNA.")
+                }
+                ProgressStatusBox(
+                    title: "DNA Fragmentation Risk",
+                    value: Double(test.dnaFragmentationRisk ?? 0),
+                    maxValue: 100.0,
+                    unit: "%",
+                    whoRange: 0.0...30.0,
+                    description: "Damage to sperm DNA. Lower percentages (<30%) indicate healthier sperm."
+                )
+                StatusBox(
+                    title: "DNA Risk Category",
+                    status: test.dnaRiskCategory ?? "Unknown",
+                    description: "Risk level of sperm DNA damage. Low risk is best for fertility."
+                )
+                
+                // Overall Status
+                StatusBox(
+                    title: "Overall Status",
+                    status: test.overallStatus,
+                    description: "A summary of your test results. Normal indicates healthy semen parameters."
+                )
                 
                 // Additional Disclaimer
                 Text("Results are for personal awareness, not medical diagnosis.")
@@ -90,32 +302,63 @@ struct ResultsView: View {
         }
         .navigationTitle("Wellness Results")
     }
+}
+
+// Progress bar view for numeric metrics
+struct ProgressStatusBox: View {
+    let title: String
+    let value: Double
+    let maxValue: Double
+    let unit: String
+    let whoRange: ClosedRange<Double>?
+    let description: String
+
+    init(title: String, value: Double, maxValue: Double, unit: String, whoRange: ClosedRange<Double>? = nil, description: String) {
+        self.title = title
+        self.value = value
+        self.maxValue = maxValue
+        self.unit = unit
+        self.whoRange = whoRange
+        self.description = description
+    }
     
-    // Reusable View for Locked Premium Sections
-    private func premiumLockedSection(title: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.headline)
+                .font(.caption)
+                .fontDesign(.rounded)
+                .foregroundColor(.secondary)
+            ProgressView(value: value, total: maxValue)
+                .progressViewStyle(.linear)
+                .tint(withinRange ? .green : .orange)
+            Text("\(String(format: "%.1f", value)) \(unit) \(rangeText)")
+                .font(.caption)
+                .fontDesign(.rounded)
+                .foregroundColor(.primary)
+            Text(description)
+                .font(.caption)
+                .fontDesign(.rounded)
                 .foregroundColor(.gray)
-            Text("Unlock Premium to view \(title.lowercased()).")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-            Button(action: {
-                // Paywall is triggered from DashboardView
-                // Use NotificationCenter or parent view state to show paywall
-                NotificationCenter.default.post(name: NSNotification.Name("ShowPaywall"), object: nil)
-            }) {
-                Text("Unlock Premium")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            .accessibilityLabel("Unlock Premium for \(title)")
+                .multilineTextAlignment(.leading)
         }
-        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.white)
+        .cornerRadius(8)
+        .shadow(radius: 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(String(format: "%.1f", value)) \(unit) \(rangeText). \(description)")
+    }
+    
+    private var withinRange: Bool {
+        guard let range = whoRange else { return true }
+        return range.contains(value)
+    }
+    
+    private var rangeText: String {
+        guard let range = whoRange else { return "" }
+        return "(WHO: \(String(format: "%.1f", range.lowerBound))–\(String(format: "%.1f", range.upperBound)) \(unit))"
     }
 }
 

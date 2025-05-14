@@ -3,21 +3,29 @@ import SwiftUI
 
 class AuthManager: ObservableObject {
     @Published var isSignedIn = false
-    @Published var currentUserID: String? // Added property
+    @Published var currentUserID: String?
     @Published var errorMessage: String?
-    
+    private var authListenerHandle: AuthStateDidChangeListenerHandle? // Add storage
+
     init() {
         if let user = Auth.auth().currentUser {
             isSignedIn = true
             currentUserID = user.uid
         }
-        // Listen for auth state changes
-        Auth.auth().addStateDidChangeListener { [weak self] _, user in
+        // Store the listener handle
+        authListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             self?.isSignedIn = user != nil
             self?.currentUserID = user?.uid
         }
     }
-    
+
+    deinit {
+        // Remove the listener
+        if let handle = authListenerHandle {
+            Auth.auth().removeStateDidChangeListener(handle)
+        }
+    }
+
     func signUp(email: String, password: String) {
         guard isValidEmail(email) else {
             errorMessage = "Please enter a valid email address"
@@ -36,7 +44,7 @@ class AuthManager: ObservableObject {
             self?.currentUserID = result?.user.uid
         }
     }
-    
+
     func signIn(email: String, password: String) {
         guard isValidEmail(email) else {
             errorMessage = "Please enter a valid email address"
@@ -51,7 +59,7 @@ class AuthManager: ObservableObject {
             self?.currentUserID = result?.user.uid
         }
     }
-    
+
     func signOut() {
         do {
             try Auth.auth().signOut()
@@ -62,7 +70,7 @@ class AuthManager: ObservableObject {
             errorMessage = error.localizedDescription
         }
     }
-    
+
     func resetPassword(email: String) {
         guard isValidEmail(email) else {
             errorMessage = "Please enter a valid email address"
@@ -76,7 +84,7 @@ class AuthManager: ObservableObject {
             self?.errorMessage = "Password reset email sent"
         }
     }
-    
+
     func deleteAccount() {
         guard let user = Auth.auth().currentUser else { return }
         user.delete { [weak self] error in
@@ -89,7 +97,7 @@ class AuthManager: ObservableObject {
             self?.errorMessage = "Account deleted"
         }
     }
-    
+
     private func isValidEmail(_ email: String) -> Bool {
         let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let predicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
