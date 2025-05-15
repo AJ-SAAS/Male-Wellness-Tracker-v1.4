@@ -4,6 +4,11 @@ struct TrackView: View {
     @EnvironmentObject var testStore: TestStore
     @State private var showInput = false
     
+    // Nested Trend enum
+    enum Trend {
+        case up, down, none
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -14,17 +19,14 @@ struct TrackView: View {
                             .fontDesign(.rounded)
                             .foregroundColor(.gray)
                     } else {
-                        // Compute averages and trend
                         let averages = calculateAverages()
                         let trend = calculateTrend()
                         
-                        // Overall Score Card
                         OverallScoreCard(
                             overallScore: averages.overallScore,
                             trend: trend
                         )
                         
-                        // Fertility Status Section
                         FertilityStatusView(
                             motility: averages.motility,
                             concentration: averages.concentration,
@@ -33,7 +35,6 @@ struct TrackView: View {
                             spermAnalysis: averages.spermAnalysis
                         )
                         
-                        // View Past Results Button
                         if testStore.tests.count > 1 {
                             NavigationLink(destination: PastResultsView()) {
                                 Text("View Past Results")
@@ -87,7 +88,6 @@ struct TrackView: View {
         }
     }
     
-    // Struct to hold averaged values
     private struct Averages {
         let overallScore: Int
         let motility: Int
@@ -97,7 +97,6 @@ struct TrackView: View {
         let spermAnalysis: Int
     }
     
-    // Calculate averages across all tests
     private func calculateAverages() -> Averages {
         let count = testStore.tests.count
         guard count > 0 else {
@@ -140,11 +139,9 @@ struct TrackView: View {
         )
     }
     
-    // Calculate trend for overall score
     private func calculateTrend() -> Trend {
         guard testStore.tests.count > 1 else { return .none }
         
-        // Current average (most recent test)
         let currentScores: [Int] = [
             Int(testStore.tests[0].totalMobility),
             Int(testStore.tests[0].spermConcentration / 100 * 100),
@@ -154,7 +151,6 @@ struct TrackView: View {
         ]
         let currentOverall = currentScores.reduce(0, +) / currentScores.count
         
-        // Previous average (all tests except the most recent)
         let previousTests = Array(testStore.tests.dropFirst())
         
         let totalMotility = previousTests.reduce(0) { $0 + Int($1.totalMobility) }
@@ -190,34 +186,31 @@ struct TrackView: View {
 // Overall Score Card with 3/4 Circular Gauge
 struct OverallScoreCard: View {
     let overallScore: Int
-    fileprivate let trend: Trend
+    let trend: TrackView.Trend
     
     var body: some View {
         VStack(alignment: .center, spacing: 12) {
             ZStack {
-                // Background arc (3/4 circle, gap at bottom)
                 Circle()
-                    .trim(from: 0.5833, to: 0.4167) // 270-degree arc (210° to 150° counterclockwise)
+                    .trim(from: 0.5833, to: 0.4167)
                     .stroke(Color.gray.opacity(0.2), lineWidth: 12)
                     .frame(width: 150, height: 150)
-                    .rotationEffect(.degrees(90)) // Rotate to position gap at bottom (180° center)
+                    .rotationEffect(.degrees(90))
                 
-                // Progress arc (start from 7 o'clock = 0, fill clockwise to 5 o'clock = 100)
                 Circle()
-                    .trim(from: 0.5833 - (0.75 * CGFloat(overallScore) / 100), to: 0.5833) // Start at 210°, fill 270° clockwise to 150°
+                    .trim(from: 0.5833 - (0.75 * CGFloat(overallScore) / 100), to: 0.5833)
                     .stroke(
                         LinearGradient(
                             colors: scoreGradient(),
-                            startPoint: .bottomTrailing, // Start at 7 o'clock (bottom right)
-                            endPoint: .bottomLeading     // End at 5 o'clock (bottom left)
+                            startPoint: .bottomTrailing,
+                            endPoint: .bottomLeading
                         ),
                         style: StrokeStyle(lineWidth: 12, lineCap: .round)
                     )
                     .frame(width: 150, height: 150)
-                    .rotationEffect(.degrees(90)) // Rotate to position gap at bottom
+                    .rotationEffect(.degrees(90))
                     .animation(.easeInOut(duration: 0.5), value: overallScore)
                 
-                // Center content
                 VStack(spacing: 4) {
                     Text("\(overallScore)")
                         .font(.system(size: 48, weight: .bold))
@@ -251,10 +244,9 @@ struct OverallScoreCard: View {
     }
     
     private func scoreGradient() -> [Color] {
-        // Darker green (score 0) to brighter green (score 100)
         return [
-            Color(hex: "2E7D32"), // Darker green (forest green) at 7 o'clock
-            Color(hex: "76FF03")   // Brighter green (lime green) at 5 o'clock
+            Color(hex: "2E7D32"),
+            Color(hex: "76FF03")
         ]
     }
 }
@@ -269,13 +261,11 @@ struct FertilityStatusView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Section Header
             Text("Fertility Status")
                 .font(.title3.bold())
                 .fontDesign(.rounded)
                 .foregroundColor(.black)
             
-            // Categories
             CategoryRow(label: "Sperm Quality", score: spermAnalysis)
             CategoryRow(label: "Motility", score: motility)
             CategoryRow(label: "Concentration", score: concentration)
@@ -298,7 +288,6 @@ struct CategoryRow: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            // Title and Score
             HStack(alignment: .center, spacing: 12) {
                 Text(label)
                     .font(.headline.bold())
@@ -313,7 +302,6 @@ struct CategoryRow: View {
                     .foregroundColor(.gray)
             }
             
-            // Progress Bar (Stretches across the screen)
             ZStack(alignment: .leading) {
                 Capsule()
                     .fill(Color.gray.opacity(0.2))
@@ -328,7 +316,6 @@ struct CategoryRow: View {
             }
             .frame(height: 8)
             
-            // Status (on the left)
             Text(scoreFeedback(score: score))
                 .font(.caption)
                 .fontDesign(.rounded)
@@ -375,30 +362,7 @@ struct PastResultsView: View {
                     .foregroundColor(.black)
                 
                 ForEach(testStore.tests, id: \.id) { test in
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(test.dateFormatted)
-                            .font(.headline)
-                            .fontDesign(.rounded)
-                            .foregroundColor(.black)
-                        
-                        let (score, label) = calculateOverallScore(test: test)
-                        Text("Overall Score: \(score) – \(label)")
-                            .font(.subheadline)
-                            .fontDesign(.rounded)
-                            .foregroundColor(.gray)
-                        
-                        CategoryRow(label: "Sperm Quality", score: mapAnalysisStatusToScore(test.analysisStatus))
-                        CategoryRow(label: "Motility", score: Int(test.totalMobility))
-                        CategoryRow(label: "Concentration", score: Int(test.spermConcentration / 100 * 100))
-                        CategoryRow(label: "Morphology", score: Int(test.morphologyRate))
-                        if let dnaFrag = test.dnaFragmentationRisk {
-                            CategoryRow(label: "DNA Fragmentation", score: Int(100 - Double(dnaFrag)))
-                        }
-                    }
-                    .padding()
-                    .background(Color(hex: "F5F5F5"))
-                    .cornerRadius(15)
-                    .shadow(color: .gray.opacity(0.1), radius: 5)
+                    TestResultRow(test: test) // Extracted to simplify type checking
                 }
                 
                 Text("Fathr is not a medical device. Visualizations are for informational purposes only. Consult a doctor for fertility concerns.")
@@ -411,6 +375,38 @@ struct PastResultsView: View {
         }
         .background(Color.white)
         .navigationTitle("Past Results")
+    }
+}
+
+// New view to simplify PastResultsView
+struct TestResultRow: View {
+    let test: TestData
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(test.dateFormatted)
+                .font(.headline)
+                .fontDesign(.rounded)
+                .foregroundColor(.black)
+            
+            let (score, label) = calculateOverallScore(test: test)
+            Text("Overall Score: \(score) – \(label)")
+                .font(.subheadline)
+                .fontDesign(.rounded)
+                .foregroundColor(.gray)
+            
+            CategoryRow(label: "Sperm Quality", score: mapAnalysisStatusToScore(test.analysisStatus))
+            CategoryRow(label: "Motility", score: Int(test.totalMobility))
+            CategoryRow(label: "Concentration", score: Int(test.spermConcentration / 100 * 100)) // Fixed typo
+            CategoryRow(label: "Morphology", score: Int(test.morphologyRate))
+            if let dnaFrag = test.dnaFragmentationRisk {
+                CategoryRow(label: "DNA Fragmentation", score: Int(100 - Double(dnaFrag)))
+            }
+        }
+        .padding()
+        .background(Color(hex: "F5F5F5"))
+        .cornerRadius(15)
+        .shadow(color: .gray.opacity(0.1), radius: 5)
     }
     
     private func calculateOverallScore(test: TestData) -> (Int, String) {
@@ -452,10 +448,6 @@ private func scoreColor(score: Int) -> Color {
     case 85...100: return Color(hex: "00D4B4")
     default: return .black
     }
-}
-
-private enum Trend {
-    case up, down, none
 }
 
 extension Color {

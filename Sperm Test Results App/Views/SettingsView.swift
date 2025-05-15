@@ -55,7 +55,7 @@ struct SettingsView: View {
                     Button(action: {
                         isRestoring = true
                         Task {
-                            await purchaseModel.restorePurchases()
+                            purchaseModel.restorePurchases() // No await needed
                             isRestoring = false
                         }
                     }) {
@@ -68,18 +68,20 @@ struct SettingsView: View {
                     }
                     .disabled(isRestoring)
                     .accessibilityLabel("Restore Purchases")
+
                     if let error = purchaseModel.errorMessage {
                         Text("Error: \(error)")
                             .foregroundColor(.red)
                         Button("Retry Restore") {
                             isRestoring = true
                             Task {
-                                await purchaseModel.restorePurchases()
+                                purchaseModel.restorePurchases() // No await needed
                                 isRestoring = false
                             }
                         }
                         .accessibilityLabel("Retry Restore Purchases")
                     }
+
                     if purchaseModel.isSubscribed {
                         Text("Premium Unlocked ✅")
                             .foregroundColor(.green)
@@ -130,7 +132,7 @@ struct SettingsView: View {
             .onAppear {
                 print("SettingsView: purchaseModel is \(purchaseModel)")
                 Task {
-                    await purchaseModel.fetchOfferings() // Fetch offerings on appear
+                    purchaseModel.fetchOfferings() // No await needed
                 }
             }
         }
@@ -159,3 +161,4 @@ struct SettingsView_Previews: PreviewProvider {
             .environmentObject(PurchaseModel())
     }
 }
+
