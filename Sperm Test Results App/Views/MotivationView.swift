@@ -23,7 +23,7 @@ struct MotivationView: View {
                 onNext()
             }
             .padding()
-            .background(Color.green)
+            .background(Color.black)
             .foregroundColor(.white)
             .cornerRadius(10)
             .accessibilityLabel("Complete onboarding")

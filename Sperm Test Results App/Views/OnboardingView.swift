@@ -21,7 +21,7 @@ struct OnboardingView: View {
                 }) {
                     Text("Back")
                         .padding()
-                        .foregroundColor(.blue)
+                        .foregroundColor(.black)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityLabel("Go back to previous step")
