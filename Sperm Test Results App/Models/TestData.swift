@@ -8,29 +8,29 @@ enum Agglutination: String, Codable, CaseIterable { case mild, moderate, severe 
 
 struct TestData: Identifiable, Codable {
     @DocumentID var id: String?
-    let appearance: Appearance
-    let liquefaction: Liquefaction
-    let consistency: Consistency
-    let semenQuantity: Double
-    let pH: Double
-    let totalMobility: Double
-    let progressiveMobility: Double
-    let nonProgressiveMobility: Double
-    let travelSpeed: Double
-    let mobilityIndex: Double
-    let still: Double
-    let agglutination: Agglutination
-    let spermConcentration: Double
-    let totalSpermatozoa: Double
-    let functionalSpermatozoa: Double
-    let roundCells: Double
-    let leukocytes: Double
-    let liveSpermatozoa: Double
-    let morphologyRate: Double
-    let pathology: Double
-    let headDefect: Double
-    let neckDefect: Double
-    let tailDefect: Double
+    let appearance: Appearance?
+    let liquefaction: Liquefaction?
+    let consistency: Consistency?
+    let semenQuantity: Double?
+    let pH: Double?
+    let totalMobility: Double?
+    let progressiveMobility: Double?
+    let nonProgressiveMobility: Double?
+    let travelSpeed: Double?
+    let mobilityIndex: Double?
+    let still: Double?
+    let agglutination: Agglutination?
+    let spermConcentration: Double?
+    let totalSpermatozoa: Double?
+    let functionalSpermatozoa: Double?
+    let roundCells: Double?
+    let leukocytes: Double?
+    let liveSpermatozoa: Double?
+    let morphologyRate: Double?
+    let pathology: Double?
+    let headDefect: Double?
+    let neckDefect: Double?
+    let tailDefect: Double?
     let date: Date
     var dnaFragmentationRisk: Int?
     var dnaRiskCategory: String?
@@ -67,29 +67,29 @@ struct TestData: Identifiable, Codable {
 
     init(
         id: String? = nil,
-        appearance: Appearance,
-        liquefaction: Liquefaction,
-        consistency: Consistency,
-        semenQuantity: Double,
-        pH: Double,
-        totalMobility: Double,
-        progressiveMobility: Double,
-        nonProgressiveMobility: Double,
-        travelSpeed: Double,
-        mobilityIndex: Double,
-        still: Double,
-        agglutination: Agglutination,
-        spermConcentration: Double,
-        totalSpermatozoa: Double,
-        functionalSpermatozoa: Double,
-        roundCells: Double,
-        leukocytes: Double,
-        liveSpermatozoa: Double,
-        morphologyRate: Double,
-        pathology: Double,
-        headDefect: Double,
-        neckDefect: Double,
-        tailDefect: Double,
+        appearance: Appearance? = nil,
+        liquefaction: Liquefaction? = nil,
+        consistency: Consistency? = nil,
+        semenQuantity: Double? = nil,
+        pH: Double? = nil,
+        totalMobility: Double? = nil,
+        progressiveMobility: Double? = nil,
+        nonProgressiveMobility: Double? = nil,
+        travelSpeed: Double? = nil,
+        mobilityIndex: Double? = nil,
+        still: Double? = nil,
+        agglutination: Agglutination? = nil,
+        spermConcentration: Double? = nil,
+        totalSpermatozoa: Double? = nil,
+        functionalSpermatozoa: Double? = nil,
+        roundCells: Double? = nil,
+        leukocytes: Double? = nil,
+        liveSpermatozoa: Double? = nil,
+        morphologyRate: Double? = nil,
+        pathology: Double? = nil,
+        headDefect: Double? = nil,
+        neckDefect: Double? = nil,
+        tailDefect: Double? = nil,
         date: Date,
         dnaFragmentationRisk: Int? = nil,
         dnaRiskCategory: String? = nil
@@ -124,28 +124,28 @@ struct TestData: Identifiable, Codable {
     }
 
     var analysisStatus: String {
-        if appearance == .normal && liquefaction == .normal && pH >= 7.2 && pH <= 8.0 && semenQuantity >= 1.5 {
+        if appearance == .normal && liquefaction == .normal && (pH ?? 7.2) >= 7.2 && (pH ?? 8.0) <= 8.0 && (semenQuantity ?? 1.5) >= 1.5 {
             return "Typical"
         }
         return "Atypical"
     }
 
     var motilityStatus: String {
-        if totalMobility >= 40 && progressiveMobility >= 32 && agglutination == .mild {
+        if (totalMobility ?? 40) >= 40 && (progressiveMobility ?? 32) >= 32 && agglutination == .mild {
             return "Active"
         }
         return "Less Active"
     }
 
     var concentrationStatus: String {
-        if spermConcentration >= 15 && liveSpermatozoa >= 58 {
+        if (spermConcentration ?? 15) >= 15 && (liveSpermatozoa ?? 58) >= 58 {
             return "Typical"
         }
         return "Lower"
     }
 
     var morphologyStatus: String {
-        if morphologyRate >= 4 {
+        if (morphologyRate ?? 4) >= 4 {
             return "Typical"
         }
         return "Varied"
@@ -170,23 +170,23 @@ struct TestData: Identifiable, Codable {
         var riskScore: Double = 0
         var flags: [String] = []
         
-        if totalMobility < 40 {
+        if (totalMobility ?? 100) < 40 {
             riskScore += weights["low_mobility"]!
             flags.append("low motility")
         }
-        if morphologyRate < 4 {
+        if (morphologyRate ?? 100) < 4 {
             riskScore += weights["abnormal_morph"]!
             flags.append("abnormal morphology")
         }
-        if leukocytes > 1 {
+        if (leukocytes ?? 0) > 1 {
             riskScore += weights["high_leukocytes"]!
             flags.append("high leukocytes")
         }
-        if semenQuantity < 1.5 {
+        if (semenQuantity ?? 100) < 1.5 {
             riskScore += weights["low_volume"]!
             flags.append("low semen volume")
         }
-        if pH < 7.2 || pH > 8.0 {
+        if (pH ?? 7.2) < 7.2 || (pH ?? 8.0) > 8.0 {
             riskScore += weights["abnormal_ph"]!
             flags.append("abnormal pH")
         }

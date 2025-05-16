@@ -37,34 +37,36 @@ struct ResultsView: View {
                 }
                 StatusBox(
                     title: "Appearance",
-                    status: test.appearance.rawValue.capitalized,
+                    status: test.appearance?.rawValue.capitalized ?? "Not Provided",
                     description: "How the sample looks. Normal is clear or white, indicating healthy semen."
                 )
                 StatusBox(
                     title: "Liquefaction",
-                    status: test.liquefaction.rawValue.capitalized,
+                    status: test.liquefaction?.rawValue.capitalized ?? "Not Provided",
                     description: "How the sample changes from gel to liquid. Normal liquefaction aids sperm movement."
                 )
                 StatusBox(
                     title: "Consistency",
-                    status: test.consistency.rawValue.capitalized,
+                    status: test.consistency?.rawValue.capitalized ?? "Not Provided",
                     description: "How thick or thin the sample is. Medium consistency is typical for healthy semen."
                 )
                 ProgressStatusBox(
                     title: "Semen Quantity",
-                    value: test.semenQuantity,
+                    value: test.semenQuantity ?? 0.0,
                     maxValue: 10.0,
                     unit: "mL",
                     whoRange: 1.4...6.0,
-                    description: "The volume of the sample. WHO recommends 1.4–6.0 mL for adequate sperm delivery."
+                    description: "The volume of the sample. WHO recommends 1.4–6.0 mL for adequate sperm delivery.",
+                    isAvailable: test.semenQuantity != nil
                 )
                 ProgressStatusBox(
                     title: "pH",
-                    value: test.pH,
+                    value: test.pH ?? 0.0,
                     maxValue: 14.0,
                     unit: "",
                     whoRange: 7.2...8.0,
-                    description: "The acidity or alkalinity of the sample. A pH of 7.2–8.0 supports sperm function."
+                    description: "The acidity or alkalinity of the sample. A pH of 7.2–8.0 supports sperm function.",
+                    isAvailable: test.pH != nil
                 )
                 
                 // Motility Section
@@ -86,51 +88,57 @@ struct ResultsView: View {
                 }
                 ProgressStatusBox(
                     title: "Total Mobility",
-                    value: test.totalMobility,
+                    value: test.totalMobility ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
                     whoRange: 40.0...100.0,
-                    description: "How many sperm are moving. WHO recommends ≥40% for healthy fertility."
+                    description: "How many sperm are moving. WHO recommends ≥40% for healthy fertility.",
+                    isAvailable: test.totalMobility != nil
                 )
                 ProgressStatusBox(
                     title: "Progressive Mobility",
-                    value: test.progressiveMobility,
+                    value: test.progressiveMobility ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
                     whoRange: 30.0...100.0,
-                    description: "How many sperm swim forward. WHO suggests ≥30% for effective fertilization."
+                    description: "How many sperm swim forward. WHO suggests ≥30% for effective fertilization.",
+                    isAvailable: test.progressiveMobility != nil
                 )
                 ProgressStatusBox(
                     title: "Non-Progressive Mobility",
-                    value: test.nonProgressiveMobility,
+                    value: test.nonProgressiveMobility ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
-                    description: "How many sperm move but don’t swim forward. Lower values are common."
+                    description: "How many sperm move but don’t swim forward. Lower values are common.",
+                    isAvailable: test.nonProgressiveMobility != nil
                 )
                 ProgressStatusBox(
                     title: "Travel Speed",
-                    value: test.travelSpeed,
+                    value: test.travelSpeed ?? 0.0,
                     maxValue: 1.0,
                     unit: "mm/sec",
-                    description: "How fast sperm move. Higher speeds suggest better motility."
+                    description: "How fast sperm move. Higher speeds suggest better motility.",
+                    isAvailable: test.travelSpeed != nil
                 )
                 ProgressStatusBox(
                     title: "Mobility Index",
-                    value: test.mobilityIndex,
+                    value: test.mobilityIndex ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
-                    description: "A measure of overall sperm movement quality. Higher values indicate better function."
+                    description: "A measure of overall sperm movement quality. Higher values indicate better function.",
+                    isAvailable: test.mobilityIndex != nil
                 )
                 ProgressStatusBox(
                     title: "Still",
-                    value: test.still,
+                    value: test.still ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
-                    description: "How many sperm are not moving. Lower values mean more active sperm."
+                    description: "How many sperm are not moving. Lower values mean more active sperm.",
+                    isAvailable: test.still != nil
                 )
                 StatusBox(
                     title: "Agglutination",
-                    status: test.agglutination.rawValue.capitalized,
+                    status: test.agglutination?.rawValue.capitalized ?? "Not Provided",
                     description: "Whether sperm stick together. None or mild is normal, severe may affect fertility."
                 )
                 
@@ -153,50 +161,56 @@ struct ResultsView: View {
                 }
                 ProgressStatusBox(
                     title: "Sperm Concentration",
-                    value: test.spermConcentration,
+                    value: test.spermConcentration ?? 0.0,
                     maxValue: 100.0,
                     unit: "M/mL",
                     whoRange: 16.0...100.0,
-                    description: "How many sperm per milliliter. WHO recommends ≥16 M/mL for fertility."
+                    description: "How many sperm per milliliter. WHO recommends ≥16 M/mL for fertility.",
+                    isAvailable: test.spermConcentration != nil
                 )
                 ProgressStatusBox(
                     title: "Total Spermatozoa",
-                    value: test.totalSpermatozoa,
+                    value: test.totalSpermatozoa ?? 0.0,
                     maxValue: 200.0,
                     unit: "M/mL",
                     whoRange: 39.0...200.0,
-                    description: "Total sperm in the sample. WHO suggests ≥39 M/mL for conception."
+                    description: "Total sperm in the sample. WHO suggests ≥39 M/mL for conception.",
+                    isAvailable: test.totalSpermatozoa != nil
                 )
                 ProgressStatusBox(
                     title: "Functional Spermatozoa",
-                    value: test.functionalSpermatozoa,
+                    value: test.functionalSpermatozoa ?? 0.0,
                     maxValue: 100.0,
                     unit: "M/mL",
-                    description: "Sperm capable of fertilization. Higher counts improve fertility chances."
+                    description: "Sperm capable of fertilization. Higher counts improve fertility chances.",
+                    isAvailable: test.functionalSpermatozoa != nil
                 )
                 ProgressStatusBox(
                     title: "Round Cells",
-                    value: test.roundCells,
+                    value: test.roundCells ?? 0.0,
                     maxValue: 10.0,
                     unit: "M/mL",
                     whoRange: 0.0...1.0,
-                    description: "Non-sperm cells in the sample. WHO recommends <1 M/mL to avoid inflammation."
+                    description: "Non-sperm cells in the sample. WHO recommends <1 M/mL to avoid inflammation.",
+                    isAvailable: test.roundCells != nil
                 )
                 ProgressStatusBox(
                     title: "Leukocytes",
-                    value: test.leukocytes,
+                    value: test.leukocytes ?? 0.0,
                     maxValue: 5.0,
                     unit: "M/mL",
                     whoRange: 0.0...1.0,
-                    description: "White blood cells in the sample. WHO suggests <1 M/mL to rule out infection."
+                    description: "White blood cells in the sample. WHO suggests <1 M/mL to rule out infection.",
+                    isAvailable: test.leukocytes != nil
                 )
                 ProgressStatusBox(
                     title: "Live Spermatozoa",
-                    value: test.liveSpermatozoa,
+                    value: test.liveSpermatozoa ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
                     whoRange: 50.0...100.0,
-                    description: "How many sperm are alive. ≥50% is typical for healthy semen."
+                    description: "How many sperm are alive. ≥50% is typical for healthy semen.",
+                    isAvailable: test.liveSpermatozoa != nil
                 )
                 
                 // Morphology Section
@@ -218,39 +232,44 @@ struct ResultsView: View {
                 }
                 ProgressStatusBox(
                     title: "Morphology Rate",
-                    value: test.morphologyRate,
+                    value: test.morphologyRate ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
                     whoRange: 4.0...100.0,
-                    description: "How many sperm have normal shape. WHO recommends ≥4% for fertility."
+                    description: "How many sperm have normal shape. WHO recommends ≥4% for fertility.",
+                    isAvailable: test.morphologyRate != nil
                 )
                 ProgressStatusBox(
                     title: "Pathology",
-                    value: test.pathology,
+                    value: test.pathology ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
-                    description: "How many sperm have abnormal shapes. Lower percentages indicate healthier semen."
+                    description: "How many sperm have abnormal shapes. Lower percentages indicate healthier semen.",
+                    isAvailable: test.pathology != nil
                 )
                 ProgressStatusBox(
                     title: "Head Defect",
-                    value: test.headDefect,
+                    value: test.headDefect ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
-                    description: "Sperm with head abnormalities. Fewer defects suggest better fertility."
+                    description: "Sperm with head abnormalities. Fewer defects suggest better fertility.",
+                    isAvailable: test.headDefect != nil
                 )
                 ProgressStatusBox(
                     title: "Neck Defect",
-                    value: test.neckDefect,
+                    value: test.neckDefect ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
-                    description: "Sperm with neck or midpiece issues. Lower values are better for sperm function."
+                    description: "Sperm with neck or midpiece issues. Lower values are better for sperm function.",
+                    isAvailable: test.neckDefect != nil
                 )
                 ProgressStatusBox(
                     title: "Tail Defect",
-                    value: test.tailDefect,
+                    value: test.tailDefect ?? 0.0,
                     maxValue: 100.0,
                     unit: "%",
-                    description: "Sperm with tail abnormalities. Fewer defects improve sperm movement."
+                    description: "Sperm with tail abnormalities. Fewer defects improve sperm movement.",
+                    isAvailable: test.tailDefect != nil
                 )
                 
                 // DNA Fragmentation Section
@@ -276,7 +295,8 @@ struct ResultsView: View {
                     maxValue: 100.0,
                     unit: "%",
                     whoRange: 0.0...30.0,
-                    description: "Damage to sperm DNA. Lower percentages (<30%) indicate healthier sperm."
+                    description: "Damage to sperm DNA. Lower percentages (<30%) indicate healthier sperm.",
+                    isAvailable: test.dnaFragmentationRisk != nil
                 )
                 StatusBox(
                     title: "DNA Risk Category",
@@ -312,14 +332,16 @@ struct ProgressStatusBox: View {
     let unit: String
     let whoRange: ClosedRange<Double>?
     let description: String
+    let isAvailable: Bool // New parameter to indicate if data is provided
 
-    init(title: String, value: Double, maxValue: Double, unit: String, whoRange: ClosedRange<Double>? = nil, description: String) {
+    init(title: String, value: Double, maxValue: Double, unit: String, whoRange: ClosedRange<Double>? = nil, description: String, isAvailable: Bool = true) {
         self.title = title
         self.value = value
         self.maxValue = maxValue
         self.unit = unit
         self.whoRange = whoRange
         self.description = description
+        self.isAvailable = isAvailable
     }
     
     var body: some View {
@@ -328,13 +350,20 @@ struct ProgressStatusBox: View {
                 .font(.caption)
                 .fontDesign(.rounded)
                 .foregroundColor(.secondary)
-            ProgressView(value: value, total: maxValue)
-                .progressViewStyle(.linear)
-                .tint(withinRange ? .green : .orange)
-            Text("\(String(format: "%.1f", value)) \(unit) \(rangeText)")
-                .font(.caption)
-                .fontDesign(.rounded)
-                .foregroundColor(.primary)
+            if isAvailable {
+                ProgressView(value: value, total: maxValue)
+                    .progressViewStyle(.linear)
+                    .tint(withinRange ? .green : .orange)
+                Text("\(String(format: "%.1f", value)) \(unit) \(rangeText)")
+                    .font(.caption)
+                    .fontDesign(.rounded)
+                    .foregroundColor(.primary)
+            } else {
+                Text("Not Provided")
+                    .font(.caption)
+                    .fontDesign(.rounded)
+                    .foregroundColor(.gray)
+            }
             Text(description)
                 .font(.caption)
                 .fontDesign(.rounded)
@@ -348,16 +377,16 @@ struct ProgressStatusBox: View {
         .cornerRadius(8)
         .shadow(radius: 2)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title): \(String(format: "%.1f", value)) \(unit) \(rangeText). \(description)")
+        .accessibilityLabel("\(title): \(isAvailable ? "\(String(format: "%.1f", value)) \(unit) \(rangeText)" : "Not Provided"). \(description)")
     }
     
     private var withinRange: Bool {
-        guard let range = whoRange else { return true }
+        guard let range = whoRange, isAvailable else { return true }
         return range.contains(value)
     }
     
     private var rangeText: String {
-        guard let range = whoRange else { return "" }
+        guard let range = whoRange, isAvailable else { return "" }
         return "(WHO: \(String(format: "%.1f", range.lowerBound))–\(String(format: "%.1f", range.upperBound)) \(unit))"
     }
 }

@@ -9,29 +9,29 @@ struct Sperm_Test_Results_AppApp: App {
     @StateObject private var authManager = AuthManager()
     @StateObject private var testStore = TestStore()
     @StateObject private var purchaseModel = PurchaseModel()
-    
+
     init() {
+        // Debug: Reset UserDefaults for testing
+        UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+        UserDefaults.standard.removeObject(forKey: "lastTipDate")
+
         // Initialize Firebase
-        do {
-            FirebaseApp.configure()
-            Analytics.setAnalyticsCollectionEnabled(false) // Disable Analytics by default
-            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false) // Disable Crashlytics by default
-        } catch {
-            print("Firebase configuration failed: \(error.localizedDescription)")
-        }
-        
+        FirebaseApp.configure()
+        Analytics.setAnalyticsCollectionEnabled(false)
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
+
         // Initialize RevenueCat
         Purchases.configure(withAPIKey: "appl_rhIxpzSZfMAgajJHLURLcNHmThg")
     }
-    
+
     var body: some Scene {
         WindowGroup {
-            TabBarView()
+            RootView()
                 .environmentObject(authManager)
                 .environmentObject(testStore)
                 .environmentObject(purchaseModel)
                 .onAppear {
-                    // Sync RevenueCat with Firebase user ID (if available)
+                    // Sync RevenueCat with Firebase user ID
                     if let userID = authManager.currentUserID {
                         Purchases.shared.logIn(userID) { (customerInfo, created, error) in
                             if let error = error {

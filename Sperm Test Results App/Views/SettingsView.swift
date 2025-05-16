@@ -55,7 +55,7 @@ struct SettingsView: View {
                     Button(action: {
                         isRestoring = true
                         Task {
-                            purchaseModel.restorePurchases() // No await needed
+                            purchaseModel.restorePurchases()
                             isRestoring = false
                         }
                     }) {
@@ -75,7 +75,7 @@ struct SettingsView: View {
                         Button("Retry Restore") {
                             isRestoring = true
                             Task {
-                                purchaseModel.restorePurchases() // No await needed
+                                purchaseModel.restorePurchases()
                                 isRestoring = false
                             }
                         }
@@ -132,20 +132,29 @@ struct SettingsView: View {
             .onAppear {
                 print("SettingsView: purchaseModel is \(purchaseModel)")
                 Task {
-                    purchaseModel.fetchOfferings() // No await needed
+                    purchaseModel.fetchOfferings()
                 }
             }
         }
     }
 
     private func deleteAccount() {
-        guard let user = Auth.auth().currentUser else { return }
+        guard let user = Auth.auth().currentUser else {
+            authManager.errorMessage = "No user logged in"
+            return
+        }
 
         testStore.deleteAllTestsForUser(userId: user.uid) { success in
-            DispatchQueue.main.async {
-                if success {
-                    authManager.deleteAccount()
-                } else {
+            if success {
+                authManager.deleteAccount { error in
+                    if let error = error {
+                        DispatchQueue.main.async {
+                            authManager.errorMessage = "Failed to delete account: \(error.localizedDescription)"
+                        }
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
                     authManager.errorMessage = "Failed to delete user data"
                 }
             }
@@ -161,4 +170,3 @@ struct SettingsView_Previews: PreviewProvider {
             .environmentObject(PurchaseModel())
     }
 }
-

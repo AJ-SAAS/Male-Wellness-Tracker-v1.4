@@ -85,9 +85,9 @@ struct TrackContentView: View {
             return Averages(overallScore: 0, motility: 0, concentration: 0, morphology: 0, dnaFragmentation: nil, spermAnalysis: 0)
         }
         
-        let totalMotility = testStore.tests.reduce(0) { $0 + Int($1.totalMobility) }
-        let totalConcentration = testStore.tests.reduce(0) { $0 + Int($1.spermConcentration / 100 * 100) }
-        let totalMorphology = testStore.tests.reduce(0) { $0 + Int($1.morphologyRate) }
+        let totalMotility = testStore.tests.reduce(0) { $0 + Int($1.totalMobility ?? 0.0) }
+        let totalConcentration = testStore.tests.reduce(0) { $0 + Int(($1.spermConcentration ?? 0.0) / 100 * 100) }
+        let totalMorphology = testStore.tests.reduce(0) { $0 + Int($1.morphologyRate ?? 0.0) }
         
         let dnaScores = testStore.tests.map { test in
             test.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80
@@ -121,35 +121,29 @@ struct TrackContentView: View {
         )
     }
     
-    private func calculateTrend() -> TrackView.Trend { // Fixed: Changed Trend to TrackView.Trend
+    private func calculateTrend() -> TrackView.Trend {
         guard testStore.tests.count > 1 else { return .none }
         
+        let latestTest = testStore.tests[0]
         let currentScores: [Int] = [
-            Int(testStore.tests[0].totalMobility),
-            Int(testStore.tests[0].spermConcentration / 100 * 100),
-            Int(testStore.tests[0].morphologyRate),
-            testStore.tests[0].dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80,
-            mapAnalysisStatusToScore(testStore.tests[0].analysisStatus)
+            Int(latestTest.totalMobility ?? 0.0),
+            Int((latestTest.spermConcentration ?? 0.0) / 100 * 100),
+            Int(latestTest.morphologyRate ?? 0.0),
+            latestTest.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80,
+            mapAnalysisStatusToScore(latestTest.analysisStatus)
         ]
         let currentOverall = currentScores.reduce(0, +) / currentScores.count
         
         let previousTests = Array(testStore.tests.dropFirst())
+        let prevCount = previousTests.count
         
-        let totalMotility = previousTests.reduce(0) { $0 + Int($1.totalMobility) }
-        let totalConcentration = previousTests.reduce(0) { $0 + Int($1.spermConcentration / 100 * 100) }
-        let totalMorphology = previousTests.reduce(0) { $0 + Int($1.morphologyRate) }
+        let totalMotility = previousTests.reduce(0) { $0 + Int($1.totalMobility ?? 0.0) }
+        let totalConcentration = previousTests.reduce(0) { $0 + Int(($1.spermConcentration ?? 0.0) / 100 * 100) }
+        let totalMorphology = previousTests.reduce(0) { $0 + Int($1.morphologyRate ?? 0.0) }
         let totalDna = previousTests.reduce(0) { $0 + ($1.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80) }
-        let totalAnalysis = previousTests.reduce(0) { $0 + self.mapAnalysisStatusToScore($1.analysisStatus) }
+        let totalAnalysis = previousTests.reduce(0) { $0 + mapAnalysisStatusToScore($1.analysisStatus) }
         
-        let previousAverages = (
-            motility: totalMotility,
-            concentration: totalConcentration,
-            morphology: totalMorphology,
-            dna: totalDna,
-            analysis: totalAnalysis
-        )
-        
-        let previousOverall = (previousAverages.motility + previousAverages.concentration + previousAverages.morphology + previousAverages.dna + previousAverages.analysis) / (previousTests.count * 5)
+        let previousOverall = (totalMotility + totalConcentration + totalMorphology + totalDna + totalAnalysis) / (prevCount * 5)
         
         if currentOverall > previousOverall { return .up }
         if currentOverall < previousOverall { return .down }
@@ -214,9 +208,9 @@ struct TestResultsView: View {
             return Averages(overallScore: 0, motility: 0, concentration: 0, morphology: 0, dnaFragmentation: nil, spermAnalysis: 0)
         }
         
-        let totalMotility = testStore.tests.reduce(0) { $0 + Int($1.totalMobility) }
-        let totalConcentration = testStore.tests.reduce(0) { $0 + Int($1.spermConcentration / 100 * 100) }
-        let totalMorphology = testStore.tests.reduce(0) { $0 + Int($1.morphologyRate) }
+        let totalMotility = testStore.tests.reduce(0) { $0 + Int($1.totalMobility ?? 0.0) }
+        let totalConcentration = testStore.tests.reduce(0) { $0 + Int(($1.spermConcentration ?? 0.0) / 100 * 100) }
+        let totalMorphology = testStore.tests.reduce(0) { $0 + Int($1.morphologyRate ?? 0.0) }
         
         let dnaScores = testStore.tests.map { test in
             test.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80
@@ -250,35 +244,29 @@ struct TestResultsView: View {
         )
     }
     
-    private func calculateTrend() -> TrackView.Trend { // Fixed: Changed Trend to TrackView.Trend
+    private func calculateTrend() -> TrackView.Trend {
         guard testStore.tests.count > 1 else { return .none }
         
+        let latestTest = testStore.tests[0]
         let currentScores: [Int] = [
-            Int(testStore.tests[0].totalMobility),
-            Int(testStore.tests[0].spermConcentration / 100 * 100),
-            Int(testStore.tests[0].morphologyRate),
-            testStore.tests[0].dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80,
-            mapAnalysisStatusToScore(testStore.tests[0].analysisStatus)
+            Int(latestTest.totalMobility ?? 0.0),
+            Int((latestTest.spermConcentration ?? 0.0) / 100 * 100),
+            Int(latestTest.morphologyRate ?? 0.0),
+            latestTest.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80,
+            mapAnalysisStatusToScore(latestTest.analysisStatus)
         ]
         let currentOverall = currentScores.reduce(0, +) / currentScores.count
         
         let previousTests = Array(testStore.tests.dropFirst())
+        let prevCount = previousTests.count
         
-        let totalMotility = previousTests.reduce(0) { $0 + Int($1.totalMobility) }
-        let totalConcentration = previousTests.reduce(0) { $0 + Int($1.spermConcentration / 100 * 100) }
-        let totalMorphology = previousTests.reduce(0) { $0 + Int($1.morphologyRate) }
+        let totalMotility = previousTests.reduce(0) { $0 + Int($1.totalMobility ?? 0.0) }
+        let totalConcentration = previousTests.reduce(0) { $0 + Int(($1.spermConcentration ?? 0.0) / 100 * 100) }
+        let totalMorphology = previousTests.reduce(0) { $0 + Int($1.morphologyRate ?? 0.0) }
         let totalDna = previousTests.reduce(0) { $0 + ($1.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80) }
-        let totalAnalysis = previousTests.reduce(0) { $0 + self.mapAnalysisStatusToScore($1.analysisStatus) }
+        let totalAnalysis = previousTests.reduce(0) { $0 + mapAnalysisStatusToScore($1.analysisStatus) }
         
-        let previousAverages = (
-            motility: totalMotility,
-            concentration: totalConcentration,
-            morphology: totalMorphology,
-            dna: totalDna,
-            analysis: totalAnalysis
-        )
-        
-        let previousOverall = (previousAverages.motility + previousAverages.concentration + previousAverages.morphology + previousAverages.dna + previousAverages.analysis) / (previousTests.count * 5)
+        let previousOverall = (totalMotility + totalConcentration + totalMorphology + totalDna + totalAnalysis) / (prevCount * 5)
         
         if currentOverall > previousOverall { return .up }
         if currentOverall < previousOverall { return .down }
@@ -507,9 +495,9 @@ struct TestResultRow: View {
                 .foregroundColor(.gray)
             
             CategoryRow(label: "Sperm Quality", score: mapAnalysisStatusToScore(test.analysisStatus))
-            CategoryRow(label: "Motility", score: Int(test.totalMobility))
-            CategoryRow(label: "Concentration", score: Int(test.spermConcentration / 100 * 100))
-            CategoryRow(label: "Morphology", score: Int(test.morphologyRate))
+            CategoryRow(label: "Motility", score: Int(test.totalMobility ?? 0.0))
+            CategoryRow(label: "Concentration", score: Int((test.spermConcentration ?? 0.0) / 100 * 100))
+            CategoryRow(label: "Morphology", score: Int(test.morphologyRate ?? 0.0))
             if let dnaFrag = test.dnaFragmentationRisk {
                 CategoryRow(label: "DNA Fragmentation", score: Int(100 - Double(dnaFrag)))
             }
@@ -521,9 +509,9 @@ struct TestResultRow: View {
     }
     
     private func calculateOverallScore(test: TestData) -> (Int, String) {
-        let motilityScore = min(Int(test.totalMobility), 100)
-        let concentrationScore = min(Int(test.spermConcentration / 100 * 100), 100)
-        let morphologyScore = min(Int(test.morphologyRate), 100)
+        let motilityScore = min(Int(test.totalMobility ?? 0.0), 100)
+        let concentrationScore = min(Int((test.spermConcentration ?? 0.0) / 100 * 100), 100)
+        let morphologyScore = min(Int(test.morphologyRate ?? 0.0), 100)
         let dnaScore = test.dnaFragmentationRisk.map { min(Int(100 - Double($0)), 100) } ?? 80
         let analysisScore = mapAnalysisStatusToScore(test.analysisStatus)
         

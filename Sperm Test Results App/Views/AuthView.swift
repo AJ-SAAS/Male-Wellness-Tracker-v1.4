@@ -1,117 +1,139 @@
 import SwiftUI
+import FirebaseAuth
 
 struct AuthView: View {
     @EnvironmentObject var authManager: AuthManager
-    @Environment(\.dismiss) var dismiss
-    @State private var email = ""
-    @State private var password = ""
-    @State private var isSignUp = false
-    @State private var isLoading = false
+    @EnvironmentObject var purchaseModel: PurchaseModel
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var confirmPassword: String = ""
+    @State private var isSignUp: Bool = false
+    @State private var showingResetPassword: Bool = false
+    @State private var resetEmail: String = ""
 
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "waveform.path")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 100, height: 100)
-                .foregroundColor(.blue)
-                .accessibilityLabel("Wellness Tracker Icon")
-
-            Text(isSignUp ? "Create Account" : "Sign In")
-                .font(.title2)
-                .fontDesign(.rounded)
-
-            TextField("Email", text: $email)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal)
-                .autocapitalization(.none)
-                .keyboardType(.emailAddress)
-                .accessibilityLabel("Email")
-
-            SecureField("Password", text: $password)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal)
-                .accessibilityLabel("Password")
-
-            if let error = authManager.errorMessage {
-                Text(error)
-                    .font(.subheadline)
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text(isSignUp ? "Create Account" : "Sign In")
+                    .font(.title)
                     .fontDesign(.rounded)
-                    .foregroundColor(.red)
-                    .padding(.horizontal)
-            }
 
-            Button(action: {
-                isLoading = true
+                TextField("Email", text: $email)
+                    .textContentType(.emailAddress)
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+                    .accessibilityLabel("Email")
+
+                SecureField("Password", text: $password)
+                    .textContentType(.password)
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+                    .accessibilityLabel("Password")
+
                 if isSignUp {
-                    authManager.signUp(email: email, password: password)
-                } else {
-                    authManager.signIn(email: email, password: password)
-                }
-            }) {
-                if isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
+                    SecureField("Confirm Password", text: $confirmPassword)
+                        .textContentType(.password)
                         .padding()
-                        .background(.blue)
-                        .cornerRadius(10)
-                } else {
-                    Text(isSignUp ? "Sign Up" : "Sign In")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(.blue)
-                        .foregroundColor(.white)
-                        .fontDesign(.rounded)
-                        .cornerRadius(10)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
+                        .accessibilityLabel("Confirm Password")
                 }
-            }
-            .padding(.horizontal)
-            .disabled(email.isEmpty || password.isEmpty)
-            .accessibilityLabel(isSignUp ? "Sign Up" : "Sign In")
-            .onChange(of: authManager.isSignedIn) {
-                isLoading = false
-                if authManager.isSignedIn {
-                    dismiss()
-                }
-            }
-            .onChange(of: authManager.errorMessage) {
-                isLoading = false
-            }
 
-            if !isSignUp {
-                Button(action: {
-                    isLoading = true
-                    authManager.resetPassword(email: email)
-                }) {
-                    Text("Forgot Password?")
-                        .font(.subheadline)
-                        .fontDesign(.rounded)
-                        .foregroundColor(.blue)
+                if let error = authManager.errorMessage {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .accessibilityLabel("Error: \(error)")
                 }
-                .padding(.top, 10)
+
+                Button(isSignUp ? "Sign Up" : "Sign In") {
+                    if isSignUp {
+                        if password == confirmPassword {
+                            authManager.signUp(email: email, password: password)
+                        } else {
+                            authManager.errorMessage = "Passwords do not match"
+                        }
+                    } else {
+                        authManager.signIn(email: email, password: password)
+                    }
+                }
+                .padding()
+                .background(email.isEmpty || password.isEmpty || (isSignUp && confirmPassword.isEmpty) ? Color.gray : Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
+                .disabled(email.isEmpty || password.isEmpty || (isSignUp && confirmPassword.isEmpty))
+                .accessibilityLabel(isSignUp ? "Sign Up" : "Sign In")
+
+                Button(isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up") {
+                    isSignUp.toggle()
+                    authManager.errorMessage = nil
+                    email = ""
+                    password = ""
+                    confirmPassword = ""
+                }
+                .foregroundColor(.blue)
+                .accessibilityLabel(isSignUp ? "Switch to Sign In" : "Switch to Sign Up")
+
+                Button("Forgot Password?") {
+                    showingResetPassword = true
+                }
+                .foregroundColor(.blue)
                 .accessibilityLabel("Forgot Password")
-                .onChange(of: authManager.errorMessage) {
-                    isLoading = false
-                }
-            }
-
-            Button(action: {
-                isSignUp.toggle()
-                authManager.errorMessage = nil
-            }) {
-                Text(isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up")
-                    .font(.subheadline)
-                    .fontDesign(.rounded)
-                    .foregroundColor(.blue)
             }
             .padding()
-            .accessibilityLabel(isSignUp ? "Switch to Sign In" : "Switch to Sign Up")
+            .sheet(isPresented: $showingResetPassword) {
+                VStack(spacing: 20) {
+                    Text("Reset Password")
+                        .font(.title)
+                        .fontDesign(.rounded)
+
+                    TextField("Email", text: $resetEmail)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .padding()
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
+                        .accessibilityLabel("Reset Email")
+
+                    Button("Send Reset Email") {
+                        authManager.resetPassword(email: resetEmail)
+                        showingResetPassword = false
+                        resetEmail = ""
+                    }
+                    .padding()
+                    .background(resetEmail.isEmpty ? Color.gray : Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .disabled(resetEmail.isEmpty)
+                    .accessibilityLabel("Send Reset Email")
+
+                    Button("Cancel") {
+                        showingResetPassword = false
+                        resetEmail = ""
+                    }
+                    .foregroundColor(.blue)
+                    .accessibilityLabel("Cancel")
+                }
+                .padding()
+            }
+            .onChange(of: email) {
+                authManager.errorMessage = nil
+            }
+            .onChange(of: isSignUp) {
+                authManager.errorMessage = nil
+            }
         }
-        .padding()
     }
 }
 
-#Preview {
-    AuthView().environmentObject(AuthManager())
+struct AuthView_Previews: PreviewProvider {
+    static var previews: some View {
+        AuthView()
+            .environmentObject(AuthManager())
+            .environmentObject(PurchaseModel())
+    }
 }
-

@@ -5,20 +5,23 @@ struct DashboardView: View {
     @State private var showInput = false
     @AppStorage("lastTipDate") private var lastTipDate: String = ""
     @State private var checkedTips: [Int: Bool] = [:]
+    @Binding var selectedTab: Int // Added for tab navigation
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     WelcomeHeaderView(showInput: $showInput)
-                    FertilitySnapshotView()
+                    FertilitySnapshotView(selectedTab: $selectedTab)
                     RecentTestsView()
-                    DailyBoostTipsView(
-                        checkedTips: checkedTips,
-                        onTipToggle: { index in
-                            checkedTips[index] = !(checkedTips[index] ?? false)
-                        }
-                    )
+                    if testStore.tests.count > 0 {
+                        DailyBoostTipsView(
+                            checkedTips: checkedTips,
+                            onTipToggle: { index in
+                                checkedTips[index] = !(checkedTips[index] ?? false)
+                            }
+                        )
+                    }
                     DisclaimerView()
                 }
                 .padding(.vertical)
@@ -32,12 +35,12 @@ struct DashboardView: View {
             .onAppear {
                 updateDailyTips()
             }
-            .onChange(of: lastTipDate) { _ in
+            .onChange(of: lastTipDate) {
                 updateDailyTips()
             }
         }
     }
-    
+
     private func updateDailyTips() {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -48,7 +51,7 @@ struct DashboardView: View {
             lastTipDate = currentDate
         }
     }
-    
+
     private func getDailyTips() -> [Int] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -67,13 +70,13 @@ struct DashboardView: View {
         
         return selectedIndices.sorted()
     }
-    
+
     private func formattedDate() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMMM d"
         return formatter.string(from: Date())
     }
-    
+
     private struct Averages {
         let overallScore: Int
         let motility: Int
@@ -82,16 +85,16 @@ struct DashboardView: View {
         let dnaFragmentation: Int?
         let spermAnalysis: Int
     }
-    
+
     private func calculateAverages() -> Averages {
         let count = testStore.tests.count
         guard count > 0 else {
             return Averages(overallScore: 0, motility: 0, concentration: 0, morphology: 0, dnaFragmentation: nil, spermAnalysis: 0)
         }
         
-        let totalMotility = testStore.tests.reduce(0) { $0 + Int($1.totalMobility) }
-        let totalConcentration = testStore.tests.reduce(0) { $0 + Int($1.spermConcentration / 100 * 100) }
-        let totalMorphology = testStore.tests.reduce(0) { $0 + Int($1.morphologyRate) }
+        let totalMotility = testStore.tests.reduce(0) { $0 + Int($1.totalMobility ?? 0.0) }
+        let totalConcentration = testStore.tests.reduce(0) { $0 + Int(($1.spermConcentration ?? 0.0) / 100 * 100) }
+        let totalMorphology = testStore.tests.reduce(0) { $0 + Int($1.morphologyRate ?? 0.0) }
         
         let dnaScores = testStore.tests.map { test in
             test.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80
@@ -109,41 +112,53 @@ struct DashboardView: View {
         let scores = [avgMotility, avgConcentration, avgMorphology, avgDnaFragmentation, avgSpermAnalysis]
         let overallScore = scores.reduce(0, +) / scores.count
         
-        return Averages(overallScore: overallScore,
-                       motility: avgMotility,
-                       concentration: avgConcentration,
-                       morphology: avgMorphology,
-                       dnaFragmentation: avgDnaFragmentation,
-                       spermAnalysis: avgSpermAnalysis)
+        return Averages(
+            overallScore: overallScore,
+            motility: avgMotility,
+            concentration: avgConcentration,
+            morphology: avgMorphology,
+            dnaFragmentation: avgDnaFragmentation,
+            spermAnalysis: avgSpermAnalysis
+        )
     }
-    
+
     private func calculateTrend() -> TrackView.Trend {
         guard testStore.tests.count > 1 else { return .none }
         
+        // Calculate current test scores
+        let latestTest = testStore.tests[0]
+        let motilityScore = Int(latestTest.totalMobility ?? 0.0)
+        let concentrationScore = Int((latestTest.spermConcentration ?? 0.0) / 100 * 100)
+        let morphologyScore = Int(latestTest.morphologyRate ?? 0.0)
+        let dnaScore = latestTest.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80
+        let analysisScore = mapAnalysisStatusToScore(latestTest.analysisStatus)
+        
         let currentScores = [
-            Int(testStore.tests[0].totalMobility),
-            Int(testStore.tests[0].spermConcentration / 100 * 100),
-            Int(testStore.tests[0].morphologyRate),
-            testStore.tests[0].dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80,
-            mapAnalysisStatusToScore(testStore.tests[0].analysisStatus)
+            motilityScore,
+            concentrationScore,
+            morphologyScore,
+            dnaScore,
+            analysisScore
         ]
         let currentOverall = currentScores.reduce(0, +) / currentScores.count
         
+        // Calculate previous tests' averages
         let previousTests = Array(testStore.tests.dropFirst())
+        let prevCount = previousTests.count
         
-        let totalMotility = previousTests.reduce(0) { $0 + Int($1.totalMobility) }
-        let totalConcentration = previousTests.reduce(0) { $0 + Int($1.spermConcentration / 100 * 100) }
-        let totalMorphology = previousTests.reduce(0) { $0 + Int($1.morphologyRate) }
+        let totalMotility = previousTests.reduce(0) { $0 + Int($1.totalMobility ?? 0.0) }
+        let totalConcentration = previousTests.reduce(0) { $0 + Int(($1.spermConcentration ?? 0.0) / 100 * 100) }
+        let totalMorphology = previousTests.reduce(0) { $0 + Int($1.morphologyRate ?? 0.0) }
         let totalDna = previousTests.reduce(0) { $0 + ($1.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80) }
         let totalAnalysis = previousTests.reduce(0) { $0 + mapAnalysisStatusToScore($1.analysisStatus) }
         
-        let previousOverall = (totalMotility + totalConcentration + totalMorphology + totalDna + totalAnalysis) / (previousTests.count * 5)
+        let previousOverall = (totalMotility + totalConcentration + totalMorphology + totalDna + totalAnalysis) / (prevCount * 5)
         
         if currentOverall > previousOverall { return .up }
         if currentOverall < previousOverall { return .down }
         return .none
     }
-    
+
     private func mapAnalysisStatusToScore(_ status: String) -> Int {
         switch status.lowercased() {
         case "typical": return 80
@@ -155,7 +170,7 @@ struct DashboardView: View {
 
 struct WelcomeHeaderView: View {
     @Binding var showInput: Bool
-    
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -177,14 +192,14 @@ struct WelcomeHeaderView: View {
                     .font(.body.bold())
                     .foregroundColor(.white)
                     .frame(width: 32, height: 32)
-                    .background(Color.blue) // Was Color(hex: "66B0F0")
+                    .background(Color.blue)
                     .clipShape(Circle())
             }
             .accessibilityLabel("Add New Test")
         }
         .padding(.horizontal)
     }
-    
+
     private func formattedDate() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMMM d"
@@ -194,7 +209,8 @@ struct WelcomeHeaderView: View {
 
 struct FertilitySnapshotView: View {
     @EnvironmentObject var testStore: TestStore
-    
+    @Binding var selectedTab: Int // Added for tab navigation
+
     var body: some View {
         if !testStore.tests.isEmpty {
             let averages = calculateAverages()
@@ -210,14 +226,16 @@ struct FertilitySnapshotView: View {
                         .font(.headline)
                         .fontDesign(.rounded)
                         .foregroundColor(.black)
-                    NavigationLink(destination: TrackView()) {
+                    Button(action: {
+                        selectedTab = 1 // Switch to TrackView tab
+                    }) {
                         Text("View Full Report >")
                             .font(.subheadline.bold())
                             .fontDesign(.rounded)
                             .foregroundColor(.white)
                             .padding(.vertical, 8)
                             .padding(.horizontal, 12)
-                            .background(Color.blue) // Was Color(hex: "66B0F0")
+                            .background(Color.blue)
                             .cornerRadius(8)
                     }
                     .accessibilityLabel("View Full Report")
@@ -231,7 +249,7 @@ struct FertilitySnapshotView: View {
             .padding(.horizontal)
         }
     }
-    
+
     private struct Averages {
         let overallScore: Int
         let motility: Int
@@ -240,68 +258,80 @@ struct FertilitySnapshotView: View {
         let dnaFragmentation: Int?
         let spermAnalysis: Int
     }
-    
+
     private func calculateAverages() -> Averages {
         let count = testStore.tests.count
         guard count > 0 else {
             return Averages(overallScore: 0, motility: 0, concentration: 0, morphology: 0, dnaFragmentation: nil, spermAnalysis: 0)
         }
-        
-        let totalMotility = testStore.tests.reduce(0) { $0 + Int($1.totalMobility) }
-        let totalConcentration = testStore.tests.reduce(0) { $0 + Int($1.spermConcentration / 100 * 100) }
-        let totalMorphology = testStore.tests.reduce(0) { $0 + Int($1.morphologyRate) }
-        
+
+        let totalMotility = testStore.tests.reduce(0) { $0 + Int($1.totalMobility ?? 0.0) }
+        let totalConcentration = testStore.tests.reduce(0) { $0 + Int(($1.spermConcentration ?? 0.0) / 100 * 100) }
+        let totalMorphology = testStore.tests.reduce(0) { $0 + Int($1.morphologyRate ?? 0.0) }
+
         let dnaScores = testStore.tests.map { test in
             test.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80
         }
         let totalDnaFragmentation = dnaScores.reduce(0, +)
-        
+
         let totalSpermAnalysis = testStore.tests.reduce(0) { $0 + mapAnalysisStatusToScore($1.analysisStatus) }
-        
+
         let avgMotility = totalMotility / count
         let avgConcentration = totalConcentration / count
         let avgMorphology = totalMorphology / count
         let avgDnaFragmentation = totalDnaFragmentation / count
         let avgSpermAnalysis = totalSpermAnalysis / count
-        
+
         let scores = [avgMotility, avgConcentration, avgMorphology, avgDnaFragmentation, avgSpermAnalysis]
         let overallScore = scores.reduce(0, +) / scores.count
-        
-        return Averages(overallScore: overallScore,
-                       motility: avgMotility,
-                       concentration: avgConcentration,
-                       morphology: avgMorphology,
-                       dnaFragmentation: avgDnaFragmentation,
-                       spermAnalysis: avgSpermAnalysis)
+
+        return Averages(
+            overallScore: overallScore,
+            motility: avgMotility,
+            concentration: avgConcentration,
+            morphology: avgMorphology,
+            dnaFragmentation: avgDnaFragmentation,
+            spermAnalysis: avgSpermAnalysis
+        )
     }
-    
+
     private func calculateTrend() -> TrackView.Trend {
         guard testStore.tests.count > 1 else { return .none }
+
+        // Calculate current test scores
+        let latestTest = testStore.tests[0]
+        let motilityScore = Int(latestTest.totalMobility ?? 0.0)
+        let concentrationScore = Int((latestTest.spermConcentration ?? 0.0) / 100 * 100)
+        let morphologyScore = Int(latestTest.morphologyRate ?? 0.0)
+        let dnaScore = latestTest.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80
+        let analysisScore = mapAnalysisStatusToScore(latestTest.analysisStatus)
         
         let currentScores = [
-            Int(testStore.tests[0].totalMobility),
-            Int(testStore.tests[0].spermConcentration / 100 * 100),
-            Int(testStore.tests[0].morphologyRate),
-            testStore.tests[0].dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80,
-            mapAnalysisStatusToScore(testStore.tests[0].analysisStatus)
+            motilityScore,
+            concentrationScore,
+            morphologyScore,
+            dnaScore,
+            analysisScore
         ]
         let currentOverall = currentScores.reduce(0, +) / currentScores.count
-        
+
+        // Calculate previous tests' averages
         let previousTests = Array(testStore.tests.dropFirst())
-        
-        let totalMotility = previousTests.reduce(0) { $0 + Int($1.totalMobility) }
-        let totalConcentration = previousTests.reduce(0) { $0 + Int($1.spermConcentration / 100 * 100) }
-        let totalMorphology = previousTests.reduce(0) { $0 + Int($1.morphologyRate) }
+        let prevCount = previousTests.count
+
+        let totalMotility = previousTests.reduce(0) { $0 + Int($1.totalMobility ?? 0.0) }
+        let totalConcentration = previousTests.reduce(0) { $0 + Int(($1.spermConcentration ?? 0.0) / 100 * 100) }
+        let totalMorphology = previousTests.reduce(0) { $0 + Int($1.morphologyRate ?? 0.0) }
         let totalDna = previousTests.reduce(0) { $0 + ($1.dnaFragmentationRisk.map { Int(100 - Double($0)) } ?? 80) }
         let totalAnalysis = previousTests.reduce(0) { $0 + mapAnalysisStatusToScore($1.analysisStatus) }
-        
-        let previousOverall = (totalMotility + totalConcentration + totalMorphology + totalDna + totalAnalysis) / (previousTests.count * 5)
-        
+
+        let previousOverall = (totalMotility + totalConcentration + totalMorphology + totalDna + totalAnalysis) / (prevCount * 5)
+
         if currentOverall > previousOverall { return .up }
         if currentOverall < previousOverall { return .down }
         return .none
     }
-    
+
     private func mapAnalysisStatusToScore(_ status: String) -> Int {
         switch status.lowercased() {
         case "typical": return 80
@@ -313,14 +343,14 @@ struct FertilitySnapshotView: View {
 
 struct RecentTestsView: View {
     @EnvironmentObject var testStore: TestStore
-    
+
     var body: some View {
         Text("Recent Tests")
             .font(.title2)
             .fontDesign(.rounded)
             .fontWeight(.bold)
             .padding(.horizontal)
-        
+
         if testStore.tests.isEmpty {
             VStack(spacing: 8) {
                 Text("No tests available.")
@@ -363,14 +393,14 @@ struct RecentTestsView: View {
 struct DailyBoostTipsView: View {
     let checkedTips: [Int: Bool]
     let onTipToggle: (Int) -> Void
-    
+
     var body: some View {
         Text("Daily Boost Tips")
             .font(.title2)
             .fontDesign(.rounded)
             .fontWeight(.bold)
             .padding(.horizontal)
-        
+
         let dailyTips = getDailyTips()
         ForEach(dailyTips, id: \.self) { tipIndex in
             let tip = DailyBoostTips.tips[tipIndex]
@@ -379,17 +409,17 @@ struct DailyBoostTipsView: View {
                     onTipToggle(tipIndex)
                 }) {
                     Image(systemName: checkedTips[tipIndex] == true ? "checkmark.square.fill" : "square")
-                        .foregroundColor(checkedTips[tipIndex] == true ? Color.blue : .gray) // Was Color(hex: "66B0F0")
+                        .foregroundColor(checkedTips[tipIndex] == true ? Color.blue : .gray)
                         .font(.system(size: 20))
                 }
                 .accessibilityLabel(checkedTips[tipIndex] == true ? "Uncheck tip" : "Check tip")
-                
+
                 Text(tip)
                     .font(.subheadline)
                     .fontDesign(.rounded)
                     .foregroundColor(.black)
                     .multilineTextAlignment(.leading)
-                
+
                 Spacer()
             }
             .padding(.vertical, 4)
@@ -400,23 +430,23 @@ struct DailyBoostTipsView: View {
             .padding(.horizontal)
         }
     }
-    
+
     private func getDailyTips() -> [Int] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let currentDate = formatter.string(from: Date())
-        
+
         let seed = currentDate.hashValue
         var random = SeededRandomGenerator(seed: seed)
         var indices = Array(0..<DailyBoostTips.tips.count)
         var selectedIndices: [Int] = []
-        
+
         for _ in 0..<3 {
             guard !indices.isEmpty else { break }
             let randomIndex = Int(random.next() % UInt64(indices.count))
             selectedIndices.append(indices.remove(at: randomIndex))
         }
-        
+
         return selectedIndices.sorted()
     }
 }
@@ -490,12 +520,12 @@ struct DailyBoostTips {
 struct SeededRandomGenerator {
     private var seed: UInt64
     private var state: UInt64
-    
+
     init(seed: Int) {
         self.seed = UInt64(abs(seed))
         self.state = self.seed
     }
-    
+
     mutating func next() -> UInt64 {
         state = state &* 6364136223846793005 &+ 1442695040888963407
         return state
@@ -504,7 +534,7 @@ struct SeededRandomGenerator {
 
 struct DashboardView_Previews: PreviewProvider {
     static var previews: some View {
-        DashboardView()
+        DashboardView(selectedTab: .constant(0))
             .environmentObject(TestStore())
     }
 }

@@ -1,87 +1,105 @@
 import SwiftUI
-import FirebaseAuth // Added import
+import FirebaseAuth
 
 struct ManageAccountView: View {
     @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var testStore: TestStore
-    @State private var showResetPassword = false
-    @State private var emailForReset = ""
-    @State private var showAlert = false
-    @State private var alertMessage = ""
-    
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var confirmPassword: String = ""
+    @State private var showingDeleteAlert = false
+    @State private var errorMessage: String?
+
     var body: some View {
-        Form {
-            Section(header: Text("Account Actions")) {
-                // Sign Out Button
-                Button(action: {
-                    authManager.signOut()
-                    showAlert = true
-                    alertMessage = authManager.errorMessage ?? "Signed out successfully"
-                }) {
-                    Text("Sign Out")
-                        .foregroundColor(.red)
+        NavigationStack {
+            Form {
+                Section(header: Text("Update Email")) {
+                    TextField("Email", text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .accessibilityLabel("Email")
                 }
-                .accessibilityLabel("Sign Out")
-                
-                // Delete Account Button
-                Button(action: {
+
+                Section(header: Text("Update Password")) {
+                    SecureField("New Password", text: $password)
+                        .textContentType(.newPassword)
+                        .accessibilityLabel("New Password")
+                    SecureField("Confirm Password", text: $confirmPassword)
+                        .textContentType(.newPassword)
+                        .accessibilityLabel("Confirm Password")
+                }
+
+                if let error = errorMessage {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .accessibilityLabel("Error: \(error)")
+                }
+
+                Section {
+                    Button("Update Account") {
+                        updateAccount()
+                    }
+                    .disabled(email.isEmpty || password.isEmpty || password != confirmPassword)
+                    .accessibilityLabel("Update Account")
+
+                    Button("Delete Account") {
+                        showingDeleteAlert = true
+                    }
+                    .foregroundColor(.red)
+                    .accessibilityLabel("Delete Account")
+                }
+            }
+            .navigationTitle("Manage Account")
+            .alert("Delete Account", isPresented: $showingDeleteAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete", role: .destructive) {
                     deleteAccount()
-                }) {
-                    Text("Delete Account")
-                        .foregroundColor(.red)
                 }
-                .accessibilityLabel("Delete Account")
+            } message: {
+                Text("This will permanently delete your account and all data. Are you sure?")
             }
-            
-            Section(header: Text("Reset Password")) {
-                TextField("Enter email", text: $emailForReset)
-                    .textContentType(.emailAddress)
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
-                
-                Button(action: {
-                    authManager.resetPassword(email: emailForReset)
-                    showAlert = true
-                    alertMessage = authManager.errorMessage ?? "Password reset email sent"
-                }) {
-                    Text("Send Password Reset Email")
+            .onAppear {
+                if let user = Auth.auth().currentUser {
+                    email = user.email ?? ""
                 }
-                .disabled(!isValidEmail(emailForReset))
-                .accessibilityLabel("Send Password Reset Email")
             }
-        }
-        .navigationTitle("Manage Account")
-        .alert(isPresented: $showAlert) {
-            Alert(title: Text("Account Action"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
         }
     }
-    
-    private func deleteAccount() {
+
+    private func updateAccount() {
         guard let user = Auth.auth().currentUser else {
-            authManager.errorMessage = "No user signed in"
-            showAlert = true
-            alertMessage = authManager.errorMessage!
+            errorMessage = "No user logged in"
             return
         }
-        
-        testStore.deleteAllTestsForUser(userId: user.uid) { success in
-            if success {
-                authManager.deleteAccount()
-                showAlert = true
-                alertMessage = authManager.errorMessage ?? "Account deleted successfully"
+
+        user.updateEmail(to: email) { error in
+            if let error = error {
+                errorMessage = "Failed to update email: \(error.localizedDescription)"
+                return
+            }
+
+            if !password.isEmpty {
+                user.updatePassword(to: password) { error in
+                    if let error = error {
+                        errorMessage = "Failed to update password: \(error.localizedDescription)"
+                    } else {
+                        errorMessage = "Account updated successfully"
+                    }
+                }
             } else {
-                authManager.errorMessage = "Failed to delete user data"
-                showAlert = true
-                alertMessage = authManager.errorMessage!
+                errorMessage = "Account updated successfully"
             }
         }
     }
-    
-    // Email validation (copied from AuthManager for consistency)
-    private func isValidEmail(_ email: String) -> Bool {
-        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let predicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
-        return predicate.evaluate(with: email)
+
+    private func deleteAccount() {
+        authManager.deleteAccount { error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    errorMessage = "Failed to delete account: \(error.localizedDescription)"
+                }
+            }
+        }
     }
 }
 
@@ -89,7 +107,5 @@ struct ManageAccountView_Previews: PreviewProvider {
     static var previews: some View {
         ManageAccountView()
             .environmentObject(AuthManager())
-            .environmentObject(TestStore())
     }
 }
-
